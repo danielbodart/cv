@@ -1,0 +1,72 @@
+html, body {
+    margin: 0;
+    padding: 0;
+    background-color: #ddd;
+    color: #333;
+    font-family: Arial, Helvetica, Verdana, sans-serif;
+    font-size: 11pt;
+}
+
+.content {
+    margin: 1em auto 3em auto;
+    padding: 0 1em 2em 1em;
+    border: 1px #bbb solid;
+    background-color: white;
+    line-height: 1.35em;
+    width: 96ex;
+}
+
+h1, h2, h3 {
+    margin: 1em 0;
+    border-bottom: 1px dashed #333;
+}
+
+h1 {
+    font-size: 130%;
+    padding: 0.25em 0;
+}
+
+h2 {
+    font-size: 110%;
+    padding: 0.20em 0;
+}
+
+dd{
+    margin-bottom: 1em;
+}
+
+address{
+    font-style:normal;
+}
+
+.details {
+    text-align:center;
+}
+
+.details dt:after {
+    content:":";
+}
+
+.details dl * {
+    margin: 0;
+    display:inline;
+}
+
+dl.open-source dt {
+    margin: 0 20px;
+    padding: 0;
+    float: left;
+}
+dl.open-source dd {
+    margin: 0 20px;
+    padding: 0;
+}
+
+a, a:visited {
+    color: #337ab7;
+    text-decoration: none;
+}
+
+a:hover {
+    text-decoration: underline;
+}
