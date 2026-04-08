@@ -28,6 +28,13 @@
         <dt>Blog</dt>
         <dd><a href="http://dan.bodar.com/">dan.bodar.com</a></dd>
     </dl>
+    <div class="filter-bar">
+        <button data-filter="ml">ML / Inference</button>
+        <button data-filter="systems">Systems</button>
+        <button data-filter="build">Build / CI</button>
+        <button data-filter="security">Security</button>
+        <button data-filter="opensource">Open Source</button>
+    </div>
 </div>
 
 <h2>Profile</h2>
@@ -40,50 +47,50 @@
 <dl>
 
 <dt><a href="https://github.com/danielbodart/capsper">Capsper</a> &mdash; Push-to-Talk Voice Dictation</dt>
-<dd>
+<dd data-tags="ml systems opensource">
     <p>Fully local voice dictation daemon for Linux and macOS. Hold CapsLock, speak, release &mdash; text appears in any focused window. <strong>Zig</strong>. 200+ releases.</p>
     <ul>
-        <li><strong>Single Zig binary:</strong> keyboard interception (evdev/CGEventTap), audio capture (PipeWire/CoreAudio), mel spectrogram, ONNX/CoreML inference, SentencePiece detokenisation, keystroke injection</li>
-        <li>NVIDIA Nemotron Speech 600M (FastConformer RNNT) &mdash; inherently incremental streaming ASR</li>
-        <li>Multi-client TCP server sharing model weights in VRAM/RAM across independent pipelines</li>
-        <li>macOS: Fulcio/Sigstore code signing with TCC permission persistence across binary updates</li>
+        <li data-tags="systems"><strong>Single Zig binary:</strong> keyboard interception (evdev/CGEventTap), audio capture (PipeWire/CoreAudio), mel spectrogram, ONNX/CoreML inference, SentencePiece detokenisation, keystroke injection</li>
+        <li data-tags="ml">NVIDIA Nemotron Speech 600M (FastConformer RNNT) &mdash; inherently incremental streaming ASR</li>
+        <li data-tags="systems">Multi-client TCP server sharing model weights in VRAM/RAM across independent pipelines</li>
+        <li data-tags="security">macOS: Fulcio/Sigstore code signing with TCC permission persistence across binary updates</li>
     </ul>
     <p><strong>Spin-off projects:</strong></p>
     <ul>
-        <li><a href="https://huggingface.co/danielbodart/nemotron-speech-600m-onnx">nemotron-speech-600m-onnx</a> &mdash; ONNX export with 4 precision variants (FP32/FP16/INT8 dynamic/INT8 static). Static INT8 required warm-cache streaming calibration to avoid blank-token collapse</li>
-        <li><a href="https://huggingface.co/danielbodart/nemotron-speech-600m-coreml">nemotron-speech-600m-coreml</a> &mdash; CoreML conversion: <strong>93% Apple Neural Engine utilisation</strong>, ~15.5x realtime. 3-level numerical validation</li>
-        <li><a href="https://huggingface.co/danielbodart/ten-vad-ggml">ten-vad-ggml</a> &mdash; ONNX&rarr;GGML converter + complete Zig inference implementation of TEN-VAD. LSTM gate reordering. Verified &lt;0.001 delta vs native</li>
-        <li><a href="https://github.com/danielbodart/fulcio-codesign">fulcio-codesign</a> &mdash; Zig binary replacing 362-line bash script for Sigstore code signing via Security.framework SPI</li>
+        <li data-tags="ml"><a href="https://huggingface.co/danielbodart/nemotron-speech-600m-onnx">nemotron-speech-600m-onnx</a> &mdash; ONNX export with 4 precision variants (FP32/FP16/INT8 dynamic/INT8 static). Static INT8 required warm-cache streaming calibration to avoid blank-token collapse</li>
+        <li data-tags="ml"><a href="https://huggingface.co/danielbodart/nemotron-speech-600m-coreml">nemotron-speech-600m-coreml</a> &mdash; CoreML conversion: <strong>93% Apple Neural Engine utilisation</strong>, ~15.5x realtime. 3-level numerical validation</li>
+        <li data-tags="ml"><a href="https://huggingface.co/danielbodart/ten-vad-ggml">ten-vad-ggml</a> &mdash; ONNX&rarr;GGML converter + complete Zig inference implementation of TEN-VAD. LSTM gate reordering. Verified &lt;0.001 delta vs native</li>
+        <li data-tags="security"><a href="https://github.com/danielbodart/fulcio-codesign">fulcio-codesign</a> &mdash; Zig binary replacing 362-line bash script for Sigstore code signing via Security.framework SPI</li>
     </ul>
 </dd>
 
 <dt><a href="https://github.com/danielbodart/zerocast">Zerocast</a> &mdash; Low-Latency Application Sharing (WIP)</dt>
-<dd>
+<dd data-tags="systems opensource">
     <p>GPU-direct remote application and terminal sharing with hardware encode and P2P WebRTC streaming. <strong>Zig, TypeScript</strong> 100+ releases.</p>
     <ul>
-        <li><strong>Zero CPU copy pipeline:</strong>Embedded wlroots-based headless Wayland compositor to NVENC/VA-API AV1/HEVC encode &rarr; WebRTC. Pixels never leave the GPU. ~200&mu;s prepare + 1.6ms encode at 1080p30</li>
-        <li>macOS port: ScreenCaptureKit + VideoToolbox HEVC + CGVirtualDisplay (in-process, zero IPC)</li>
-        <li>Forked <a href="https://github.com/danielbodart/libdatachannel">libdatachannel</a> adding abs-capture-time RTP extension and playout-delay for zero jitter buffer</li>
+        <li data-tags="systems"><strong>Zero CPU copy pipeline:</strong>Embedded wlroots-based headless Wayland compositor to NVENC/VA-API AV1/HEVC encode &rarr; WebRTC. Pixels never leave the GPU. ~200&mu;s prepare + 1.6ms encode at 1080p30</li>
+        <li data-tags="systems">macOS port: ScreenCaptureKit + VideoToolbox HEVC + CGVirtualDisplay (in-process, zero IPC)</li>
+        <li data-tags="systems">Forked <a href="https://github.com/danielbodart/libdatachannel">libdatachannel</a> adding abs-capture-time RTP extension and playout-delay for zero jitter buffer</li>
         <li>Cloudflare Worker signalling: Durable Objects with WebSocket Hibernation API</li>
     </ul>
 </dd>
 
 <dt><a href="https://talebrary.com/">Talebrary</a> &mdash; Interactive Fiction Platform with AI</dt>
-<dd>
+<dd data-tags="ml">
     <p>3,000+ text adventures playable in-browser with AI-generated cover art and suggested actions. <strong>TypeScript, Cloudflare Workers & Workflow</strong>. 300+ releases.</p>
     <ul>
-        <li>AI image pipeline with 3-step fallback chain</li>
+        <li data-tags="ml">AI image pipeline with 3-step fallback chain</li>
         <li>Durable Workflow abstraction portable across runtimes</li>
-        <li><strong>LLM eval suite built from scratch:</strong> scorers for JSON validity, schema match, tree structure, vision-based judging. Multi-model comparison with cached runs</li>
+        <li data-tags="ml"><strong>LLM eval suite built from scratch:</strong> scorers for JSON validity, schema match, tree structure, vision-based judging. Multi-model comparison with cached runs</li>
     </ul>
     <p><strong>Spin-off:</strong></p>
     <ul>
-        <li><a href="https://github.com/bodar/wasiglk">WasiGlk</a> &mdash; <strong>17 interpreters rebuilt x86 &rarr; WebAssembly</strong> via Zig's wasm32-wasi target, replacing Emscripten. 67-87% smaller binaries (Glulxe: 1.68MB &rarr; 222KB). Full Zig Glk I/O, JSPI for native browser async.</li>
+        <li data-tags="systems"><a href="https://github.com/bodar/wasiglk">WasiGlk</a> &mdash; <strong>17 interpreters rebuilt x86 &rarr; WebAssembly</strong> via Zig's wasm32-wasi target, replacing Emscripten. 67-87% smaller binaries (Glulxe: 1.68MB &rarr; 222KB). Full Zig Glk I/O, JSPI for native browser async.</li>
     </ul>
 </dd>
 
 <dt><a href="https://dataflow.bodar.com/">Dataflow</a> &mdash; Reactive Data Flow for HTML</dt>
-<dd>
+<dd data-tags="opensource">
     <p>Reactive framework inspired by Observable, grounded in HTML. 300+ releases:</p>
     <ul>
         <li><strong>Javascript AST Walker</strong> &mdash; mutable ESTree walker with enter/leave, skip/remove/replace</li>
@@ -99,26 +106,26 @@
 
 <dl class="open-source">
 <dt><a href="https://github.com/danielbodart/masked-diffusion-text">Masked Diffusion Text</a></dt>
-<dd>Discrete text diffusion experiment &mdash; fine-tuning ModernBERT-large to generate text through iterative unmasking, inspired by <a href="https://arxiv.org/abs/2406.07524">MDLM</a>. Cosine/log-linear/Fibonacci unmasking schedules, Gumbel sampling. Python</dd>
+<dd data-tags="ml">Discrete text diffusion experiment &mdash; fine-tuning ModernBERT-large to generate text through iterative unmasking, inspired by <a href="https://arxiv.org/abs/2406.07524">MDLM</a>. Cosine/log-linear/Fibonacci unmasking schedules, Gumbel sampling. Python</dd>
 <dt><a href="https://github.com/danielbodart/claude-code-plugins">Claude Code Plugins</a></dt>
-<dd>Security-focused plugins: URL allowlist (3-level match to prevent data exfiltration), trunk-based dev workflow, code review. <a href="https://github.com/danielbodart/claude-code-sandbox">Sandbox settings</a> for credential and secret protection. Red-team tested 19 exfiltration vectors</dd>
+<dd data-tags="security">Security-focused plugins: URL allowlist (3-level match to prevent data exfiltration), trunk-based dev workflow, code review. <a href="https://github.com/danielbodart/claude-code-sandbox">Sandbox settings</a> for credential and secret protection. Red-team tested 19 exfiltration vectors</dd>
 </dl>
 
 <h2>Open Source Libraries</h2>
 
 <dl class="open-source">
 <dt><a href="https://github.com/bodar/bodar.ts">bodar.ts</a></dt>
-<dd>7 TypeScript packages on JSR: totallylazy (FP), lazyrecords (SQL), yadic (DI), jsx2dom, dataflow, DuckDB adapters</dd>
+<dd data-tags="opensource">7 TypeScript packages on JSR: totallylazy (FP), lazyrecords (SQL), yadic (DI), jsx2dom, dataflow, DuckDB adapters</dd>
 <dt><a href="http://totallylazy.com/">TotallyLazy</a> (318&#9733;)</dt>
-<dd>Functional programming for Java &mdash; lazy evaluation, persistent data structures, pattern matching. Pre-dates Java 8 Streams</dd>
+<dd data-tags="opensource">Functional programming for Java &mdash; lazy evaluation, persistent data structures, pattern matching. Pre-dates Java 8 Streams</dd>
 <dt><a href="https://github.com/bodar/jcompilo/">JCompilo</a> (40&#9733;)</dt>
-<dd>Java compiler with bytecode post-processing: tail-call optimisation via @tailrec, zero-copy JARs, 20-80% faster builds</dd>
+<dd data-tags="build opensource">Java compiler with bytecode post-processing: tail-call optimisation via @tailrec, zero-copy JARs, 20-80% faster builds</dd>
 <dt><a href="https://github.com/bodar/utterlyidle/">UtterlyIdle</a> (95&#9733;)</dt>
-<dd>REST framework for Java &mdash; ~1ms startup, in-memory testing, uniform client/server API</dd>
+<dd data-tags="opensource">REST framework for Java &mdash; ~1ms startup, in-memory testing, uniform client/server API</dd>
 <dt><a href="https://github.com/bodar/yatspec/">YatSpec</a> (59&#9733;)</dt>
-<dd>BDD from pure JUnit &mdash; auto-generated HTML reports with sequence diagram generation</dd>
+<dd data-tags="build opensource">BDD from pure JUnit &mdash; auto-generated HTML reports with sequence diagram generation</dd>
 <dt><a href="https://github.com/bodar/yadic/">Yadic</a>, <a href="https://github.com/bodar/lazyrecords/">LazyRecords</a>, <a href="https://github.com/bodar/shavenmaven/">ShavenMaven</a></dt>
-<dd>DI (12KB, 1M resolves/0.28s), LINQ for Java, dependency resolver. <a href="https://github.com/bodar/">Full org &rarr;</a></dd>
+<dd data-tags="opensource">DI (12KB, 1M resolves/0.28s), LINQ for Java, dependency resolver. <a href="https://github.com/bodar/">Full org &rarr;</a></dd>
 </dl>
 
 <h2>Presentations / Awards</h2>
@@ -150,7 +157,7 @@
         <p>Hands-on CTO balancing strategic leadership with deep technical contribution. Led cloud cost optimisation, security audits, and compliance while remaining engaged in architectural reviews, squad collaborations, and pairing sessions.</p>
 
         <ul>
-            <li><strong>AI/ML adoption:</strong> drove developer productivity initiatives with Claude Code and Cursor; integrated constrained decoding and GraphRAG into product LLM pipelines</li>
+            <li data-tags="ml"><strong>AI/ML adoption:</strong> drove developer productivity initiatives with Claude Code and Cursor; integrated constrained decoding and GraphRAG into product LLM pipelines</li>
             <li><strong>Infrastructure:</strong> vendor negotiations, cloud cost reduction, security and compliance oversight</li>
             <li><strong>Hands-on throughout:</strong> product and architectural reviews, pairing sessions, code contributions across the stack</li>
         </ul>
@@ -164,7 +171,7 @@
         <p>Led transformation of a manual integration process (hundreds of clients, thousands of hotels) into a robust automated system using static analysis, NLP, and ML with human oversight.</p>
 
         <ul>
-            <li><strong>ML on constrained devices:</strong> models trained in Python, inference in TypeScript for real-time page interpretation on mobile</li>
+            <li data-tags="ml"><strong>ML on constrained devices:</strong> models trained in Python, inference in TypeScript for real-time page interpretation on mobile</li>
             <li>Built reliable foundation now supporting all product teams</li>
         </ul>
     </dd>
@@ -205,7 +212,7 @@
     <p>Built broadband and telephony backend systems powering Sky's ISP backbone. Led team of 11.</p>
 
     <ul>
-        <li><strong>Reduced build times from 45 minutes to 3 minutes</strong> (
+        <li data-tags="build"><strong>Reduced build times from 45 minutes to 3 minutes</strong> (
             <a href="http://dan.bodar.com/2012/02/28/crazy-fast-build-times-or-when-10-seconds-starts-to-make-you-nervous/">Article</a>,
             <a href="http://www.infoq.com/presentations/Crazy-Fast-Build-Times-or-When-10-Seconds-Starts-to-Make-You-Nervous">QCon Video</a>)
         </li>
@@ -247,5 +254,48 @@
 <p>References on request</p>
 
 </div>
+
+<script>
+(function() {
+    const params = new URLSearchParams(location.search);
+    const initial = (params.get('hl') || '').split(',').filter(Boolean);
+
+    function apply(activeTags) {
+        document.querySelectorAll('[data-tags]').forEach(el => {
+            el.classList.remove('highlighted', 'highlighted-card');
+        });
+        if (!activeTags.length) return;
+        document.querySelectorAll('[data-tags]').forEach(el => {
+            const tags = el.dataset.tags.split(/\s+/);
+            if (tags.some(t => activeTags.includes(t))) {
+                el.classList.add('highlighted');
+                if (el.tagName === 'DD' && el.parentElement.tagName === 'DL' &&
+                    el.parentElement.parentElement.classList.contains('content')) {
+                    el.classList.add('highlighted-card');
+                }
+            }
+        });
+    }
+
+    const buttons = document.querySelectorAll('.filter-bar button');
+    const active = new Set(initial);
+
+    function sync() {
+        buttons.forEach(b => b.classList.toggle('active', active.has(b.dataset.filter)));
+        apply([...active]);
+        const hl = [...active].join(',');
+        const url = new URL(location);
+        if (hl) url.searchParams.set('hl', hl); else url.searchParams.delete('hl');
+        history.replaceState(null, '', url);
+    }
+
+    buttons.forEach(b => b.addEventListener('click', () => {
+        active.has(b.dataset.filter) ? active.delete(b.dataset.filter) : active.add(b.dataset.filter);
+        sync();
+    }));
+
+    sync();
+})();
+</script>
 </body>
 </html>

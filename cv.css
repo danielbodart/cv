@@ -1,72 +1,308 @@
+@import url('https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;0,8..60,700;1,8..60,400&family=Source+Sans+3:wght@300;400;600;700&display=swap');
+
+:root {
+    --text: #1a2332;
+    --text-secondary: #4a5568;
+    --accent: #b44d20;
+    --accent-light: #fdf5f0;
+    --border: #dce1e8;
+    --bg: #f5f6f8;
+    --card-bg: #ffffff;
+    --heading-border: #b44d20;
+}
+
+*, *::before, *::after {
+    box-sizing: border-box;
+}
+
 html, body {
     margin: 0;
     padding: 0;
-    background-color: #ddd;
-    color: #333;
-    font-family: Arial, Helvetica, Verdana, sans-serif;
-    font-size: 11pt;
+    background-color: var(--bg);
+    color: var(--text);
+    font-family: 'Source Sans 3', system-ui, sans-serif;
+    font-size: 10.5pt;
+    line-height: 1.5;
+    font-weight: 400;
+    -webkit-font-smoothing: antialiased;
 }
 
 .content {
-    margin: 1em auto 3em auto;
-    padding: 0 1em 2em 1em;
-    border: 1px #bbb solid;
-    background-color: white;
-    line-height: 1.35em;
-    width: 96ex;
+    max-width: 54em;
+    margin: 0 auto;
+    padding: 0 2em 3em;
+    background-color: var(--card-bg);
+    border: none;
 }
 
-h1, h2, h3 {
-    margin: 1em 0;
-    border-bottom: 1px dashed #333;
-}
-
-h1 {
-    font-size: 130%;
-    padding: 0.25em 0;
-}
-
-h2 {
-    font-size: 110%;
-    padding: 0.20em 0;
-}
-
-dd{
-    margin-bottom: 1em;
-}
-
-address{
-    font-style:normal;
-}
+/* ── Header ── */
 
 .details {
-    text-align:center;
+    text-align: center;
+    padding: 2.5em 0 1.5em;
+    border-bottom: 3px solid var(--accent);
+    margin-bottom: 0.5em;
+}
+
+.details h1 {
+    font-family: 'Source Serif 4', Georgia, serif;
+    font-size: 2em;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    margin: 0 0 0.4em;
+    border: none;
+    color: var(--text);
 }
 
 .details dt:after {
-    content:":";
+    content: ":";
+}
+
+.details dl {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 0.2em 0.4em;
+    margin: 0;
 }
 
 .details dl * {
     margin: 0;
-    display:inline;
+    display: inline;
+}
+
+.details dt {
+    font-weight: 600;
+    font-size: 0.88em;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--text-secondary);
+}
+
+.details dd {
+    font-size: 0.92em;
+    margin-right: 1em;
+}
+
+/* ── Headings ── */
+
+h2 {
+    font-family: 'Source Serif 4', Georgia, serif;
+    font-size: 1.15em;
+    font-weight: 600;
+    color: var(--text);
+    margin: 1.8em 0 0.6em;
+    padding: 0 0 0.3em;
+    border-bottom: 1px solid var(--border);
+    letter-spacing: -0.01em;
+}
+
+h3 {
+    font-family: 'Source Serif 4', Georgia, serif;
+    font-size: 1em;
+    margin: 1em 0 0.4em;
+    border: none;
+}
+
+/* ── Profile ── */
+
+h2 + p {
+    font-size: 1.02em;
+    line-height: 1.6;
+    color: var(--text);
+    max-width: 52em;
+}
+
+/* ── Project cards ── */
+
+.content > dl > dd {
+    margin: 0.3em 0 1.5em;
+    padding: 0.9em 1em 0.6em;
+    background: linear-gradient(135deg, var(--bg) 0%, var(--card-bg) 100%);
+    border-radius: 4px;
+}
+
+.content > dl > dt {
+    font-family: 'Source Serif 4', Georgia, serif;
+    font-weight: 600;
+    font-size: 1.05em;
+    margin: 1.2em 0 0.15em;
+}
+
+.content > dl > dt a {
+    color: var(--text);
+    text-decoration: none;
+    border-bottom: 1px solid var(--accent);
+}
+
+.content > dl > dt a:hover {
+    color: var(--accent);
+}
+
+.content > dl > dd > p:first-child {
+    margin-top: 0;
+}
+
+/* ── Lists ── */
+
+ul {
+    margin: 0.4em 0;
+    padding-left: 1.4em;
+}
+
+li {
+    margin-bottom: 0.25em;
+    line-height: 1.45;
+}
+
+li strong {
+    color: var(--text);
+}
+
+/* ── Spin-off label ── */
+
+dd > p > strong:only-child {
+    font-size: 0.85em;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-secondary);
+}
+
+/* ── Open source list ── */
+
+dl.open-source {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 0.2em 1.2em;
+    align-items: baseline;
 }
 
 dl.open-source dt {
-    margin: 0 20px;
-    padding: 0;
-    float: left;
-}
-dl.open-source dd {
-    margin: 0 20px;
-    padding: 0;
+    margin: 0;
+    padding: 0.15em 0;
+    float: none;
+    font-weight: 600;
+    white-space: nowrap;
 }
 
+dl.open-source dd {
+    margin: 0;
+    padding: 0.15em 0.3em;
+    color: var(--text-secondary);
+    border-radius: 2px;
+}
+
+/* ── Links ── */
+
 a, a:visited {
-    color: #337ab7;
+    color: var(--accent);
     text-decoration: none;
 }
 
 a:hover {
     text-decoration: underline;
+}
+
+/* ── Experience ── */
+
+h2 ~ dl > dt {
+    font-weight: 600;
+    color: var(--text-secondary);
+    font-size: 0.9em;
+    letter-spacing: 0.01em;
+}
+
+/* ── Experience cards (not project cards) ── */
+
+h2:not(:first-of-type) ~ dl > dd {
+    margin-bottom: 1em;
+}
+
+/* ── Awards ── */
+
+dl.presentations-awards {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 0.2em 1.2em;
+    align-items: baseline;
+}
+
+dl.presentations-awards dt {
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+dl.presentations-awards dd {
+    margin: 0;
+}
+
+/* ── Education ── */
+
+h2 + ul {
+    columns: 2;
+    column-gap: 2em;
+}
+
+h2 + ul + ul {
+    columns: 2;
+    column-gap: 2em;
+}
+
+/* ── Highlight system ── */
+
+.filter-bar {
+    display: flex;
+    gap: 0.4em;
+    flex-wrap: wrap;
+    justify-content: center;
+    padding: 0.8em 0 0;
+    margin-bottom: -0.5em;
+}
+
+.filter-bar button {
+    font-family: 'Source Sans 3', system-ui, sans-serif;
+    font-size: 0.78em;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    padding: 0.25em 0.7em;
+    border: 1.5px solid var(--border);
+    border-radius: 3px;
+    background: var(--card-bg);
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.filter-bar button:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+}
+
+.filter-bar button.active {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: white;
+}
+
+/* Highlighted items */
+
+[data-tags].highlighted {
+    background-color: var(--accent-light);
+}
+
+/* Highlighted project cards — needs to beat .content > dl > dd specificity */
+
+.content > dl > dd.highlighted-card {
+    background: linear-gradient(135deg, var(--accent-light) 0%, var(--card-bg) 100%);
+}
+
+address {
+    font-style: normal;
+}
+
+@media print {
+    .filter-bar {
+        display: none !important;
+    }
 }

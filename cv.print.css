@@ -1,13 +1,54 @@
 html, body {
-    background-color : #FFFFFF;
-    color: #000000;
+    background-color: #FFFFFF;
+    color: #1a2332;
     font-size: 9pt;
 }
 
 .content {
-    width: 100%;
-    border: 0 none #FFFFFF;
+    max-width: 100%;
+    border: 0 none;
     background-color: #FFFFFF;
     margin: 0;
     padding: 0;
+}
+
+.filter-bar {
+    display: none !important;
+}
+
+.details {
+    padding-top: 0.5em;
+    border-bottom: 3px solid #b44d20;
+}
+
+h2 {
+    margin-top: 1.2em;
+    break-after: avoid;
+    border-bottom-color: #dce1e8;
+}
+
+a, a:visited {
+    color: #b44d20;
+}
+
+.content > dl > dt a {
+    color: #1a2332;
+    border-bottom-color: #b44d20;
+}
+
+.content > dl > dd {
+    break-inside: avoid;
+    background: #f5f6f8;
+}
+
+.content > dl > dd.highlighted-card {
+    background: #fdf5f0 !important;
+}
+
+[data-tags].highlighted {
+    background-color: #fdf5f0;
+}
+
+dl.open-source dt {
+    font-weight: 600;
 }
