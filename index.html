@@ -89,11 +89,11 @@
 
 <dt>Game Server Fleet</dt>
 <dd data-tags="ops opensource">
-    <p>Self-hosted Minecraft Bedrock, Valheim and Hytale servers for me and my kids, run as hands-off infrastructure. Game updates flow in automatically and never interrupt anyone mid-game. <strong>Go, Docker, Nix</strong>.</p>
+    <p>Self-hosted Minecraft Bedrock, Valheim and Hytale servers for me and my kids, run as hands-off infrastructure. Game updates flow in automatically and never interrupt anyone mid-game. Every tool runs on Docker or natively on systemd, with NixOS modules. <strong>Go, Docker, Nix</strong>.</p>
     <ul>
-        <li data-tags="ops"><strong><a href="https://github.com/danielbodart/chandlery">Chandlery</a>:</strong> Docker-native game-server images built from scratch. The game is checksum-verified and baked in, so the image tag <em>is</em> the game version. Graceful stop, real health checks, console via <code>docker attach</code></li>
+        <li data-tags="ops"><strong><a href="https://github.com/danielbodart/chandlery">Chandlery</a>:</strong> game servers as Docker images built from scratch (the image tag <em>is</em> the game version) or as confined systemd/NixOS services from the same image. Graceful stop, real health checks and a console either way</li>
         <li data-tags="ops"><strong><a href="https://github.com/danielbodart/tidewaiter">Tidewaiter</a>:</strong> an auto-updater that waits until no one is playing, detecting players by watching live connections (UDP too). Swaps in a new version only once it's healthy, and rolls back otherwise. Covers Docker and NixOS services</li>
-        <li><strong><a href="https://github.com/danielbodart/treesinger">Treesinger</a>:</strong> Hytale sign-in broker. Sign in once and every server shares the login through short-lived sessions; adding a server needs no config</li>
+        <li><strong><a href="https://github.com/danielbodart/treesinger">Treesinger</a>:</strong> Hytale sign-in broker. Sign in once and every server shares the login through short-lived sessions; in Docker or socket-activated under systemd</li>
         <li><strong><a href="https://github.com/danielbodart/portical">Portical</a></strong> (26&#9733;): UPnP port forwarding from a single Docker label or systemd key</li>
         <li data-tags="ops"><strong>Hands-off pipeline:</strong> an hourly CI job bumps the game versions in the flake, the server rebuilds itself, and Tidewaiter swaps each game in once its players leave</li>
     </ul>

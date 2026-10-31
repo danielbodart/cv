@@ -367,11 +367,11 @@ One flake declares 10 machines: NixOS desktop, laptop and server; a nix-darwin M
 
 ### Game Server Fleet -- Hands-Off Hosting for Me and My Kids
 
-Self-hosted Minecraft Bedrock, Valheim and Hytale servers, built as a small open-source toolchain so they look after themselves. New game versions flow in automatically and nobody gets kicked mid-game.
-- **[Chandlery](https://github.com/danielbodart/chandlery):** Docker-native game-server images -- the image tag *is* the game version; graceful stop and real health checks
-- **[Tidewaiter](https://github.com/danielbodart/tidewaiter)** (Go): updates a service only once no one is using it; health-gated swap with rollback, for Docker and NixOS
-- **[Treesinger](https://github.com/danielbodart/treesinger)** (Go): Hytale sign-in broker -- sign in once and every server shares it
-- **[Portical](https://github.com/danielbodart/portical)** (Go, 26 stars): UPnP port forwarding from a single Docker label or systemd key
+Self-hosted Minecraft Bedrock, Valheim and Hytale servers, built as a small open-source toolchain so they look after themselves. New game versions flow in automatically and nobody gets kicked mid-game. **Every tool runs both on Docker and natively on systemd, with a NixOS module in its flake.**
+- **[Chandlery](https://github.com/danielbodart/chandlery):** game servers as Docker images (the tag *is* the game version) or as confined systemd/NixOS services built from the same image -- graceful stop, real health checks, a console either way; NixOS VM-tested
+- **[Tidewaiter](https://github.com/danielbodart/tidewaiter)** (Go): updates Docker containers and NixOS systemd units only once no one is using them; health-gated swap with rollback
+- **[Treesinger](https://github.com/danielbodart/treesinger)** (Go): Hytale sign-in broker -- sign in once and every server shares it; in Docker or socket-activated under systemd
+- **[Portical](https://github.com/danielbodart/portical)** (Go, 26 stars): UPnP port forwarding from a single Docker label or systemd unit key
 - **Hands-off pipeline:** hourly CI bumps game versions in the flake, the server rebuilds itself, and Tidewaiter swaps each game in once its players leave
 
 ### Nix Packaging
