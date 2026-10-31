@@ -356,69 +356,28 @@ Settings-level deny rules blocking remote-mutating CLI commands and reads of cre
 ## Infrastructure / Ops: Nix
 
 ### nix-config -- Every Machine in the House as One Flake
-**Repo:** danielbodart/nix-config (private) | **Language:** Nix, Shell | **548 commits in ~8 weeks** (Sep-Oct 2026) | 139 modules, ~11k lines, 31 pinned inputs
+**Repo:** danielbodart/nix-config (private) | **Language:** Nix | **548 commits**
 
-One flake declares 10 built machines (plus 2 that are only pinned). One command, `sudo nixos-rebuild switch`, works on every machine with no path or `#host`. System config and `$HOME` (home-manager) apply together in one rebuild.
-
-**Hosts:**
-
-| Host | Machine | Built as |
-|------|---------|----------|
-| dan-desktop | i9-12900K + RTX 5070 Ti | NixOS |
-| dan-blade | Razer Blade 16 laptop (iGPU + NVIDIA offload) | NixOS |
-| server | ASRock DeskMini (game servers, Plex, Samba, Home Assistant) | NixOS, upgrades itself hourly |
-| dan-mac | Apple Silicon M4 | nix-darwin over Determinate Nix, sharing the same home-manager config |
-| gateway + 4 access points | Google WiFi units | OpenWrt images built in Nix (`nix build .#openwrt-<ap>`) via nix-openwrt-imagebuilder |
-| moonlight | Raspberry Pi 4 (game streaming to the TV) | Raspberry Pi OS image built in Nix via **nix-raspios-imagebuilder** (my own) |
-| modem, phone | not built | pinned only: host key and login, WireGuard peer key |
-
-**Architecture highlights:**
-- **Dendritic flake-parts layout:** every `.nix` file is a flake-parts module found on disk by import-tree, so no host lists its imports. A feature (capsper, the SSH signer, the access point) carries its NixOS, home-manager and OpenWrt halves in one folder. Adding a machine needs no edit to `flake.nix`
-- **A small module system for OpenWrt:** OpenWrt has none, so a thin one sits in front of the imagebuilder -- e.g. the Wi-Fi channel plan for every box is set in one file
-- **One installer USB key per machine, fully offline:** the disko partitioning script and the host's whole prebuilt system as a zstd binary cache, inside LUKS. Install is one passphrase and the hostname typed back: no network, no evaluation, no build. Rehearsed in QEMU first
-- **Every machine must fit on an 8GB key:** a hard rule that keeps closures honest (the laptop's 19.8GiB system compresses to 6.3GiB)
-
-**Security posture:**
-- **Secure Boot** with lanzaboote and per-machine signing keys (MSI firmware enrolls the key in db; the Razer can't, so it goes through shim with a MOK)
-- **LUKS unlocked by the TPM, sealed to PCR 7 and PCR 15** -- PCR 15 defeats swapping in your own LUKS volume to get the key unsealed; passphrase is the fallback
-- **SSH keys held in the TPM:** host and user keys have no Ed25519/RSA copy anywhere, so a disk or backup carries nothing that could stand in for the machine. Every machine trusts every other with pinned host keys, no trust on first use
-- **sops-nix with age keys in the TPM:** two recipients per machine (edit and boot-time decrypt) plus a post-quantum recovery key kept offline. Secrets are only ever paths, never values in the world-readable store
-
-### Nix + Claude: Making the Machine Safe for Agents
-The premise: an OS that is reproducible, declarative and can be rolled back to any earlier generation from the boot menu is the right base for running coding agents with real autonomy. If an agent (or I) breaks something, the previous generation is one reboot away; every change is a reviewable diff.
-
-- **Claude Code is a pinned, reproducible package.** Plugin marketplaces are store paths and `settings.json` is a read-only store symlink, so an agent can't quietly change its own config -- a plugin is added by editing the config and rebuilding, on purpose
-- **MCP servers come from nixpkgs, not `npx @latest`:** Playwright, waydriver (headless Wayland GUI testing) and Openterface bundled into a home-manager-generated plugin
-- **The agent safety stack is wired in fleet-wide:** chase tiers by checkout path, flong containers, frisket credential injection (each tier with its own scoped Cloudflare account), quoin's TPM signer and sudo gate on the workstations, remote-mode sudo on the server, the darwin sudo module on the Mac, galley as the desktop approval queue. The server, gateway and modem are declared as ops-tier SSH targets with per-command expectations
-- **Codex inside Claude:** dragoman bridges OpenAI Codex in as a subagent, running inside the same chase tiers
-
-### Home Server: Flatcar -> NixOS
-**Repo:** danielbodart/server (private) | **130 commits** (2024-2026)
-
-- **Earlier, Flatcar:** net-booted from the OpenWrt gateway with a custom iPXE menu. When Flatcar's CDN rotated its root certificate the diskless server couldn't boot, so boot images moved onto the gateway over plain HTTP -- integrity moved from the transport to the content (GPG + SHA512 on mirror, then pinned hashes)
-- **Now, NixOS:** a host in nix-config. Docker containers became confined systemd units one at a time, with the install rehearsed in a VM against a decoy data disk. It upgrades itself hourly from trunk using a read-only deploy key held in its TPM; reboots wait until nobody is playing
-- **Hands-off game updates:** a GitHub Actions cron moves only the game-fleet inputs in the lock every hour, the server picks that up within the hour, and Tidewaiter swaps each game in once its players leave
+One flake declares 10 machines: NixOS desktop, laptop and server; a nix-darwin Mac; an OpenWrt router and 4 Wi-Fi access points; and a Raspberry Pi. One rebuild command applies system and home config on any of them, and any bad change is one reboot from rollback.
+- **Every platform from one place:** NixOS, nix-darwin, OpenWrt images and Raspberry Pi OS images, with features (e.g. Capsper, the SSH signer) declared once across all of them
+- **Hardware-rooted security:** Secure Boot, disk encryption unlocked by the TPM, and SSH and secrets keys that never leave the TPM
+- **Offline bare-metal reinstall** from one encrypted USB key holding the machine's whole prebuilt system
+- **Safe for agents:** Claude Code and its MCP servers pinned as Nix packages with read-only config, and the Agent Safety Stack wired in across every machine
+- **Self-updating server:** upgrades itself hourly from trunk, waiting until nobody is playing
 
 ### Game Server Fleet -- Hands-Off Hosting for Me and My Kids
 
-Self-hosted Minecraft Bedrock, Valheim and Hytale servers for my kids and me, built as a small open-source toolchain so the servers look after themselves. New game versions flow in automatically (hourly CI bumps the game-fleet inputs in the flake -> the NixOS server rebuilds itself -> Tidewaiter swaps each game in once its players leave), and nobody gets kicked mid-game. Upstream fixes along the way: LinuxGSM (Bedrock monitor restart loop) and miniupnp (IPv4 mask with IPv6 disabled on OpenWrt).
+Self-hosted Minecraft Bedrock, Valheim and Hytale servers, built as a small open-source toolchain so they look after themselves. New game versions flow in automatically and nobody gets kicked mid-game.
+- **[Chandlery](https://github.com/danielbodart/chandlery):** Docker-native game-server images -- the image tag *is* the game version; graceful stop and real health checks
+- **[Tidewaiter](https://github.com/danielbodart/tidewaiter)** (Go): updates a service only once no one is using it; health-gated swap with rollback, for Docker and NixOS
+- **[Treesinger](https://github.com/danielbodart/treesinger)** (Go): Hytale sign-in broker -- sign in once and every server shares it
+- **[Portical](https://github.com/danielbodart/portical)** (Go, 26 stars): UPnP port forwarding from a single Docker label or systemd key
+- **Hands-off pipeline:** hourly CI bumps game versions in the flake, the server rebuilds itself, and Tidewaiter swaps each game in once its players leave
 
-
-| Project | Purpose | Commits |
-|---------|---------|---------|
-| **[Portical](https://github.com/danielbodart/portical)** (26 stars) | UPnP port forwarding from a single Docker label or systemd key; static binaries for amd64, arm64 and armv7 | 93 |
-| **[Tidewaiter](https://github.com/danielbodart/tidewaiter)** | Auto-updater that only updates idle services; activity detected with conntrack (incl. UDP); health-gated swap with rollback by renaming rather than deleting; covers Docker and NixOS systemd units | 42 |
-| **[Chandlery](https://github.com/danielbodart/chandlery)** (Shell) | Clean-room, Docker-native game-server images (Bedrock, Valheim, Hytale): game checksum-verified and baked in, so the image tag *is* the game version; graceful stop, real health checks, console via `docker attach` | 145 |
-| **[Treesinger](https://github.com/danielbodart/treesinger)** | Hytale OAuth broker: holds the only refresh token and issues short-lived sessions per server on request; adding a server needs no config | 41 |
-| **[gokit](https://github.com/danielbodart/gokit)** | Shared helpers pulled out of the three daemons: http.Handler/RoundTripper fakes, a stoppable clock for tests that never sleep, logging, environment | 4 |
-
-### Nix Packaging (public)
-- **[nix-raspios-imagebuilder](https://github.com/danielbodart/nix-raspios-imagebuilder):** Raspberry Pi OS images built by Nix. Every `.deb` locked by URL and SHA256 and resolved against signed indexes. Read-only root with a RAM overlay; A/B upgrades over SSH via the firmware's `tryboot`, falling back automatically if the new slot isn't healthy
-- **[claude-desktop](https://github.com/danielbodart/claude-desktop) / chatgpt-desktop:** flakes for the **official** Linux apps. Versions pinned to the vendors' PGP-signed apt indexes rather than a hand-copied hash, self-updating hourly, built and launched on x86_64 and aarch64. Makes Claude Desktop's Cowork (QEMU VM) work on NixOS, with the closure at 900MiB vs 2.8GiB
-- **[glim](https://github.com/danielbodart/glim)** (Zig): ~100KB static binary exposing the Razer Blade keyboard backlight to Linux as an LED through uleds -- GNOME's slider, screen-lock blanking and Fn keys all work with no kernel module, so it survives Secure Boot
-
-### Blog Migrations: WordPress -> Hugo
-2 blogs rebuilt/migrated from WordPress to Hugo static sites.
+### Nix Packaging
+- **[nix-raspios-imagebuilder](https://github.com/danielbodart/nix-raspios-imagebuilder):** reproducible Raspberry Pi OS images built by Nix, with a read-only root and A/B upgrades that fall back automatically
+- **[claude-desktop](https://github.com/danielbodart/claude-desktop) / chatgpt-desktop:** Nix flakes for the official Linux apps, pinned to the vendors' signed repos and self-updating
+- **[glim](https://github.com/danielbodart/glim)** (Zig): Razer Blade keyboard backlight as a standard Linux LED, with no kernel module
 
 ---
 
