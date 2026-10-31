@@ -144,97 +144,56 @@ Runs classic interactive fiction interpreters in the browser by compiling them t
 
 ## Hugging Face Model Ports
 
-All published under [huggingface.co/danielbodart](https://huggingface.co/danielbodart). These demonstrate model conversion and optimization engineering -- taking research-grade models and making them deployable on specific hardware.
+Published under [huggingface.co/danielbodart](https://huggingface.co/danielbodart) -- taking research-grade models and making them deployable on specific hardware.
 
 ### nemotron-speech-600m-onnx
 **[HF](https://huggingface.co/danielbodart/nemotron-speech-600m-onnx)** | **[GitHub](https://github.com/danielbodart/nemotron-speech-600m-onnx)** | 212 downloads
 
-NVIDIA's Nemotron Speech 600M (FastConformer RNNT) exported to ONNX with 4 precision variants:
-
-| Variant | Encoder Size | Target Hardware |
-|---------|-------------|-----------------|
-| FP32 | 2.3 GB | Any (reference) |
-| FP16 | 1.2 GB | NVIDIA GPU |
-| INT8 Dynamic | 799 MB | Intel CPU (VNNI/AMX) |
-| INT8 Static | 799 MB | NVIDIA GPU + Intel CPU (QDQ) |
-
-**Key insight:** INT8 static quantization required **warm-cache streaming calibration** -- naive approach with zero-initialized caches produced all-blank tokens because calibration gave wrong activation scales. Solution: sequential chunk processing carrying cache state forward, 6-chunk warmup per file.
+NVIDIA's Nemotron Speech 600M streaming ASR exported to ONNX.
+- 4 precision variants: FP32, FP16, INT8 dynamic, INT8 static (2.3GB -> 799MB encoder)
+- Static INT8 made to work with **warm-cache streaming calibration** -- naive calibration produced all-blank output
 
 ### nemotron-speech-600m-coreml
 **[HF](https://huggingface.co/danielbodart/nemotron-speech-600m-coreml)** | **[GitHub](https://github.com/danielbodart/nemotron-speech-600m-coreml)** | 34 downloads
 
-Same model converted to CoreML for Apple Silicon:
-- **93% of encoder ops run on the Apple Neural Engine** (1486/1597 ops)
-- **~15.5x realtime inference speed** on Apple Silicon
-- 3-level numerical validation against PyTorch reference
-- Documented non-contiguous stride issue: CoreML output arrays may have ANE alignment padding requiring stride-aware copy
+The same model converted to CoreML for Apple Silicon.
+- **93% of encoder ops on the Apple Neural Engine**, ~15.5x realtime
+- 3-level numerical validation against the PyTorch reference
 
 ### ten-vad-ggml
 **[HF](https://huggingface.co/danielbodart/ten-vad-ggml)** | **[GitHub](https://github.com/danielbodart/ten-vad-ggml)**
 
-TEN-VAD (Voice Activity Detection) converted to GGML format -- described as "the only GGML implementation of TEN-VAD":
-- 296 KB model (21 FP32 tensors)
-- Complete Zig reference implementation: STFT + mel spectrogram + pitch extraction, separable convolution + LSTM + dense
-- LSTM gate reordering (ONNX i/o/f/c -> PyTorch i/f/g/o)
-- Verified identical outputs vs native `libten_vad.so` (max delta < 0.001)
+The only GGML implementation of TEN-VAD (voice activity detection).
+- ONNX-to-GGML converter plus a complete Zig inference implementation (STFT, conv, LSTM)
+- Verified against the native library to within 0.001
 
 ---
 
 ## ML Experiments
 
 ### Masked Diffusion Text -- Discrete Text Diffusion from Scratch
-**Repo:** [danielbodart/masked-diffusion-text](https://github.com/danielbodart/masked-diffusion-text) | **Language:** Python | March 2025
+**Repo:** [danielbodart/masked-diffusion-text](https://github.com/danielbodart/masked-diffusion-text) | **Language:** Python
 
-An experiment in discrete text diffusion -- fine-tuning ModernBERT-large to generate text through iterative unmasking, inspired by [MDLM (Masked Diffusion Language Models)](https://arxiv.org/abs/2406.07524).
-
-**What it does:** Treats masked language modelling as a diffusion process. Training randomly masks tokens at any ratio; inference iteratively unmasks the most confident predictions first via a cosine schedule. Because generation is non-autoregressive (all positions simultaneously), the model can work in reverse -- given an answer, generate a valid question.
-
-**Technical details:**
-- Fine-tunes ModernBERT-large on synthetic arithmetic reasoning (90k examples of integer addition)
-- Cosine, log-linear, and Fibonacci unmasking schedules
-- Gumbel sampling for position selection
-- Immutable state container with masking operations
-- An early exploration that informed later work on LLM eval suites and model optimisation
+Fine-tunes ModernBERT-large to generate text by iterative unmasking, inspired by [MDLM](https://arxiv.org/abs/2406.07524). Because generation is non-autoregressive, it can work in reverse -- given an answer, generate a valid question.
+- Cosine, log-linear and Fibonacci unmasking schedules with Gumbel sampling
+- Trained on synthetic arithmetic reasoning (90k examples)
 
 ---
 
 ## Open Source Libraries
 
-### Dataflow -- Reactive Data Flow for HTML
-**Package in [bodar/bodar.ts](https://github.com/bodar/bodar.ts)** | Published to JSR
+### bodar.ts -- TypeScript Library Ecosystem
+**Repo:** [bodar/bodar.ts](https://github.com/bodar/bodar.ts) | **543 commits** | Published to JSR | [dataflow.bodar.com](https://dataflow.bodar.com/)
 
-A reactive dataflow library inspired by Observable Framework but grounded in HTML instead of Markdown. An extremely lightweight alternative to React.
+TypeScript successors to my long-running Java libraries, plus new work:
+- **@bodar/dataflow** -- reactive dataflow for plain HTML, inspired by Observable: add one attribute to `<script>` tags and they form a live dependency graph. Works at build time, at the edge or in a service worker. Includes its own JS AST walker, JSX compiler and scope analyser
+- **@bodar/totallylazy** -- functional programming: composable predicates, transducers, parser combinators, lazy evaluation
+- **@bodar/lazyrecords** -- type-safe SQL from functional predicates; PostgreSQL, SQLite and DuckDB (native and WASM)
+- **@bodar/jsx2dom** -- JSX straight to native DOM calls, in browser, edge, server and tests
+- **@bodar/yadic** -- tiny lazy dependency injection container
 
-**Technical highlights:**
-- Add a single `data-reactive` attribute to `<script>` tags -- the engine topologically sorts all reactive scripts and builds a dependency graph
-- Runtime-flexible: reactivity can be added at build time (static), as middleware on server/edge, or as a service worker in the browser
-- **Contains the Javascript AST Walker** -- complete ESTree-compatible walker with enter/leave callbacks, skip/remove/replace operations. Mutable, small, fast.
-- **Contains the JSX AST Compiler** -- transforms JSX AST into regular JS AST (createElement calls). Fast, bug-free, per-spec.
-- **Contains the Javascript Scope AST Analyser** -- full lexical scope analysis tracking var/let/const/function/class/import/param/catch bindings, var hoisting to function scope, destructuring patterns, and all unresolved references. 100% strict spec compliance.
-- DuckDB WASM integration with cross-filter flights demo (10M records) using Mosaic vgplot
-
-### bodar.ts Monorepo -- TypeScript Library Ecosystem
-**Repo:** [bodar/bodar.ts](https://github.com/bodar/bodar.ts) | **543 commits** | All published to JSR | [dataflow.bodar.com](https://dataflow.bodar.com/)
-
-TypeScript ports and spiritual successors to long-running Java libraries. Development timeline:
-- **Oct 2025 (69 commits):** Systematic JSR publishing (88%+ score), full transducer implementation in 7 phases, parser combinators
-- **Nov 2025 (112 commits):** Created dataflow reactive framework from scratch, SharedAsyncIterable, HTMLTransformer, JSX support, advanced curry with full TypeScript type system
-- **Dec 2025 (153 commits -- peak):** Bundling, import maps, memory leak hunting (rewrote combineLatest to avoid Promise.race leaks), SVG/Canvas/Web Audio tutorials, switched to `tsgo` (TypeScript Go compiler)
-- **Jan 2026 (71 commits):** LazyRecords SQLite (Bun native), DuckDB (native + WASM), transactions, Mosaic vgplot with 10M-record cross-filter demo
-- **Oct 2026:** dataflow PositionalJSX (blocks keep their DOM across re-runs), build moved to TypeScript 7 native `tsc`, lazyrecords typed bind-safe SQL AST, and a Claude Code plugin marketplace shipping a dataflow skill
-
-Packages:
-
-- **@bodar/totallylazy** -- Comprehensive FP library: composable predicates, transducers, parser combinators (complete JSON grammar with JSDoc custom type support), comparators, lazy evaluation
-- **@bodar/lazyrecords** -- Type-safe SQL query builder bridging FP with SQL. Converts functional predicates/transducers into parameterized queries. PostgreSQL, SQLite, and DuckDB support
-- **@bodar/yadic** -- Lightweight dependency injection container with lazy initialization via property getters
-- **@bodar/jsx2dom** -- Thin adapter converting JSX/TSX to native DOM calls. Works in browser, edge, server, and tests (linkedom) without global namespace pollution. Added full SVG support (extending the library)
-- **@bodar/dataflow** -- (Described above)
-- **@bodar/lazyrecords-duckdb / lazyrecords-duckdb-wasm** -- DuckDB integrations
-
-### Extending Third-Party Libraries
-- **jsx2dom:** Added full SVG support to enable server-side rendering of SVG elements
-- **Mosaic DuckDB Go Server:** Found and reported 3 security vulnerabilities -- function-blocklist flag parsed but never wired up, exec command bypasses schema validation, cross-tenant data leaks via shared preagg schema ([uwdata/mosaic#958](https://github.com/uwdata/mosaic/issues/958))
+### Security Finding
+- **Mosaic DuckDB Go Server:** found and reported 3 vulnerabilities -- an unwired function blocklist, a validation bypass and cross-tenant data leaks ([uwdata/mosaic#958](https://github.com/uwdata/mosaic/issues/958))
 
 ---
 
