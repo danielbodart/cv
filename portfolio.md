@@ -62,30 +62,23 @@ A zenity drop-in that puts every question in one shared queue window, so bursts 
 ## Graph Database & Agent Memory
 
 ### mogwai-db -- TinkerPop 4 Graph Database on SQLite
-**Repo:** [bodar/mogwai-db](https://github.com/bodar/mogwai-db) | **Language:** TypeScript (Bun) | **2,501 commits, 306 releases** (Jul-Oct 2026)
+**Repo:** [bodar/mogwai-db](https://github.com/bodar/mogwai-db) | **Language:** TypeScript (Bun) | **2,501 commits, 306 releases**
 
-A TinkerPop 4 graph database that uses SQLite as its engine and runs natively in the browser, at the edge, on bare metal and in Docker. Any unmodified TinkerPop 4 client talks to it in Gremlin over the standard HTTP/GraphBinary wire. Built for many small-to-medium isolated graphs (per-user, per-tenant, per-agent) where one graph is one SQLite database, so isolation comes free and an idle graph costs roughly nothing. Pre-alpha, designed in the open.
+A TinkerPop 4 graph database with SQLite as its engine. Any unmodified TinkerPop client talks to it in Gremlin over the standard wire. One graph is one SQLite database, so per-user, per-tenant or per-agent graphs are isolated by design and cost almost nothing when idle.
 
 **Technical highlights:**
-- **Compiles each whole Gremlin traversal into one parameterised SQL statement** (a CTE chain) instead of interpreting it a step at a time. Pipeline: ANTLR parser generated from TinkerPop's own `Gremlin.g4` -> own IR -> strategy normalisation -> typed Stream lowering -> SQL, encoded to GraphBinary only at the root. Writes become `INSERT ... SELECT ... RETURNING` chains, so statement count scales with steps, not rows
-- **Four runtimes from one core:** browser (official SQLite WASM on OPFS in a Worker behind a Service Worker, so an unmodified client works inside the tab), Cloudflare Durable Objects (one DO = one graph, created on first access, scales to zero), single `bun build --compile` binaries for Linux/macOS/Windows on arm64/x64, and a multi-arch Docker image. One contract suite runs against every backend over the real wire
-- **Conformance:** 100% of the 2,395 canonical Gremlin traversals parse; **1,878 of 2,286 official TinkerPop Gherkin scenarios (~82%)** pass through the unmodified `gremlin` JS client, enforced as a ratchet that can only go up. Anything it can't compile is refused with a clear error -- never a plausible wrong answer
-- **Eight-level test ladder:** SQL-contract tests, a Gherkin addendum of 120 feature files, property-based testing (differential oracle plus metamorphic laws, seeded from HEAD), and an L8 run of the whole suite under `PRAGMA reverse_unordered_selects` that catches hidden row-order dependence, gated at zero failures in CI
-- **Plans that stay stable without statistics:** join order and index seeks fixed at compile time, because Durable Object SQLite refuses `PRAGMA analysis_limit`. A mid-size graph's 1-hop filtered lookup went from **~9.8s to ~19ms**, identical with or without `sqlite_stat1`; `EXPLAIN QUERY PLAN` assertions forbid full scans
-- **Bounded vs unbounded `repeat()`:** the TinkerPop corpus asks for 2.5x10^15 traversers over 808 vertices. A bounded `times(n)` is unrolled at compile time with traverser counts compressed per step; an unbounded one becomes a recursive CTE
-- **Search and analytics in SQL:** FTS5 trigram full-text index behind `tinker.search` and the TextP predicates; graph algorithms compiled as set-based SQL passes (PageRank, ArticleRank, HITS, betweenness/closeness/harmonic centrality, weak and strong connected components, peer-pressure clustering, k-core, node similarity, triangle count, shortest path)
-- **Distributed features:** cross-graph `federate()` pushdown and CouchDB-style replication (revisions, by-seq change feed, tombstones, resumable pull/push, conflict preservation) across Bun, Cloudflare and the browser
-- **Built for agents to drive:** graph lifecycle is REST on the same `/gremlin/{graph}` path; the server describes itself through OpenAPI 3.1 (`/openapi.json`, interactive `/docs`)
-- ~300ms cold start and ~1ms warm queries for the compiled binary; parsing is 2.7% of compile time
-- **Agent-driven development at scale:** built through parallel Claude Code agent workflows (hundreds of worktree branches, ~650 agent-authored commits) under a strict CI gate: type check, lint, architecture/bind/SQL hygiene checks and the full test ladder
+- **Compiles each whole Gremlin traversal into one SQL statement** -- no step-by-step interpreter; anything it can't compile is refused, never answered wrongly
+- **Four runtimes from one core:** in the browser (SQLite WASM on OPFS), Cloudflare Durable Objects (scales to zero), single-file binaries for Linux/macOS/Windows, and Docker
+- **~82% of the official TinkerPop conformance suite** via the unmodified client, enforced as a CI ratchet within an 8-level test ladder (including property-based testing)
+- **Stable plans without statistics:** join order fixed at compile time took a 1-hop lookup from ~9.8s to ~19ms
+- Full-text search, graph algorithms, cross-graph federation and CouchDB-style replication -- all in SQL; built largely through parallel Claude Code agent workflows
 
-**Direction: agent memory** (design and phased plan; not yet shipped)
+**Direction: agent memory** (design stage, not yet shipped)
 
-A 400-line design doc positions mogwai-db as the engine for agent memory that is physically isolated per agent and costs nothing when idle. Thesis: *"the most efficient agent-memory API is not an API -- it's a query language plus a code sandbox, running next to the data."*
-- An MCP server over the Gremlin endpoint with exact typed schema and enum discovery from the catalog, bound parameters, chunked streaming and honest errors -- a better version of Apache's official `gremlin-mcp`
-- A three-part memory model (short-term conversation, long-term entity knowledge graph with typed relationships kept typed, reasoning traces) expressed as a graph schema plus query recipes, not a bag of ~20 tools
-- On Cloudflare, a Code Mode sandbox with Vectorize and Workers AI for fused retrieval: embed -> KNN -> graph expansion -> server-side ranking by recency, salience and similarity, with decay/salience scoring later pushed into the compiled SQL
-- One SQLite database per agent (Durable Object facets under a per-customer Workers for Platforms boundary), costed at ~$0.02-0.03 per tenant per month against $45-125/month floors for incumbents (Neo4j, Zep, Weaviate, Mem0)
+Positions mogwai-db as per-agent memory that is physically isolated and free when idle. Thesis: *"the most efficient agent-memory API is not an API -- it's a query language plus a code sandbox, running next to the data."*
+- MCP server over Gremlin with typed schema discovery, rather than a bag of tools
+- Graph model for short-term conversation, long-term entity knowledge and reasoning traces
+- Fused retrieval at the edge: embed, nearest-neighbour search, graph expansion, ranked by recency, salience and similarity
 
 ---
 
