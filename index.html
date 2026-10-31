@@ -52,15 +52,15 @@
 
 <dl>
 
-<dt>Agent Safety Stack &mdash; <a href="https://github.com/danielbodart/flong">flong</a>, <a href="https://github.com/danielbodart/frisket">frisket</a>, <a href="https://github.com/danielbodart/chase">chase</a>, <a href="https://github.com/danielbodart/quoin">quoin</a>, <a href="https://github.com/danielbodart/galley">galley</a></dt>
+<dt>Agent Safety Stack</dt>
 <dd data-tags="agents security systems opensource">
     <p>Lets Claude Code and Codex run on NixOS with real tools but no credentials, no root and no unmediated egress. The agent is treated as untrusted; every approval moves to a host daemon that decides by policy or asks a person. <strong>Zig, Go, Nix</strong>. 685 commits, 340+ releases in 6 weeks.</p>
     <ul>
-        <li data-tags="systems"><strong>flong:</strong> ephemeral rootless containers from NixOS config &mdash; <strong>~10ms start vs Docker's ~120ms</strong>. No capabilities, 4-filter seccomp stack proven byte-for-byte stricter than systemd-nspawn's</li>
-        <li data-tags="security"><strong>frisket:</strong> kernel-steered (TPROXY) egress proxy. The sandbox holds a placeholder; the real token is swapped in on the wire, with allow/ask/refuse per request down to the git operation and GraphQL mutation</li>
-        <li data-tags="agents"><strong>chase:</strong> picks a sandbox tier by unforgeable checkout path. 5,400+ API operations classified read/write/guarded; per-project grants signed by a TPM key</li>
-        <li data-tags="security"><strong>quoin:</strong> TPM-backed SSH agent (hardware-level signing; keys never leave the chip) and a sudo gate written as a Zig sudo plugin &mdash; an agent's <code>git push</code> or <code>sudo</code> waits for a human, even across machines via <code>ssh -A</code></li>
-        <li data-tags="agents"><strong>galley:</strong> zenity drop-in that stacks approvals from parallel agent sessions into one queue</li>
+        <li data-tags="systems"><strong><a href="https://github.com/danielbodart/flong">flong</a>:</strong> ephemeral rootless containers from NixOS config &mdash; <strong>~10ms start vs Docker's ~120ms</strong>. No capabilities, 4-filter seccomp stack proven byte-for-byte stricter than systemd-nspawn's</li>
+        <li data-tags="security"><strong><a href="https://github.com/danielbodart/frisket">frisket</a>:</strong> kernel-steered (TPROXY) egress proxy. The sandbox holds a placeholder; the real token is swapped in on the wire, with allow/ask/refuse per request down to the git operation and GraphQL mutation</li>
+        <li data-tags="agents"><strong><a href="https://github.com/danielbodart/chase">chase</a>:</strong> picks a sandbox tier by unforgeable checkout path. 5,400+ API operations classified read/write/guarded; per-project grants signed by a TPM key</li>
+        <li data-tags="security"><strong><a href="https://github.com/danielbodart/quoin">quoin</a>:</strong> TPM-backed SSH agent (hardware-level signing; keys never leave the chip) and a sudo gate written as a Zig sudo plugin &mdash; an agent's <code>git push</code> or <code>sudo</code> waits for a human, even across machines via <code>ssh -A</code></li>
+        <li data-tags="agents"><strong><a href="https://github.com/danielbodart/galley">galley</a>:</strong> zenity drop-in that stacks approvals from parallel agent sessions into one queue</li>
     </ul>
 </dd>
 
@@ -87,14 +87,14 @@
     </ul>
 </dd>
 
-<dt>Game Server Fleet &mdash; <a href="https://github.com/danielbodart/chandlery">Chandlery</a>, <a href="https://github.com/danielbodart/tidewaiter">Tidewaiter</a>, <a href="https://github.com/danielbodart/treesinger">Treesinger</a>, <a href="https://github.com/danielbodart/portical">Portical</a></dt>
+<dt>Game Server Fleet</dt>
 <dd data-tags="ops opensource">
     <p>Self-hosted Minecraft Bedrock, Valheim and Hytale servers for me and my kids, run as hands-off infrastructure. Game updates flow in automatically and never interrupt anyone mid-game. <strong>Go, Docker, Nix</strong>.</p>
     <ul>
-        <li data-tags="ops"><strong>Chandlery:</strong> Docker-native game-server images built from scratch. The game is checksum-verified and baked in, so the image tag <em>is</em> the game version. Graceful stop, real health checks, console via <code>docker attach</code></li>
-        <li data-tags="ops"><strong>Tidewaiter:</strong> an auto-updater that waits until no one is playing, detecting players by watching live connections (UDP too). Swaps in a new version only once it's healthy, and rolls back otherwise. Covers Docker and NixOS services</li>
-        <li><strong>Treesinger:</strong> Hytale sign-in broker. Sign in once and every server shares the login through short-lived sessions; adding a server needs no config</li>
-        <li><strong>Portical</strong> (26&#9733;): UPnP port forwarding from a single Docker label or systemd key</li>
+        <li data-tags="ops"><strong><a href="https://github.com/danielbodart/chandlery">Chandlery</a>:</strong> Docker-native game-server images built from scratch. The game is checksum-verified and baked in, so the image tag <em>is</em> the game version. Graceful stop, real health checks, console via <code>docker attach</code></li>
+        <li data-tags="ops"><strong><a href="https://github.com/danielbodart/tidewaiter">Tidewaiter</a>:</strong> an auto-updater that waits until no one is playing, detecting players by watching live connections (UDP too). Swaps in a new version only once it's healthy, and rolls back otherwise. Covers Docker and NixOS services</li>
+        <li><strong><a href="https://github.com/danielbodart/treesinger">Treesinger</a>:</strong> Hytale sign-in broker. Sign in once and every server shares the login through short-lived sessions; adding a server needs no config</li>
+        <li><strong><a href="https://github.com/danielbodart/portical">Portical</a></strong> (26&#9733;): UPnP port forwarding from a single Docker label or systemd key</li>
         <li data-tags="ops"><strong>Hands-off pipeline:</strong> an hourly CI job bumps the game versions in the flake, the server rebuilds itself, and Tidewaiter swaps each game in once its players leave</li>
     </ul>
 </dd>
