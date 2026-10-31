@@ -167,7 +167,7 @@ A developer-focused remote application and terminal sharing tool with GPU-direct
 ### Talebrary -- Interactive Fiction Platform
 **Repo:** [danielbodart/talebrary](https://github.com/danielbodart/talebrary) | **Language:** TypeScript | **558 commits** | repo private, site behind sign-in since Aug 2026
 
-A web application serving 3,000+ interactive fiction games playable in the browser, with AI-generated cover art and illustrations. Built on Cloudflare Workers + D1 + R2.
+A web application serving 2,000+ interactive fiction games playable in the browser, with AI-generated cover art and illustrations. Built on Cloudflare Workers + D1 + R2.
 
 **Technical highlights:**
 - Dual-runtime architecture: single codebase runs on both Bun (local dev) and Cloudflare Workers (production) via dependency injection. Universal HTTP type: `Http = (request: Request) => Promise<Response>` -- no frameworks, just function composition
