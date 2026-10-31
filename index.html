@@ -94,8 +94,7 @@
         <li data-tags="ops"><strong><a href="https://github.com/danielbodart/chandlery">Chandlery</a>:</strong> game servers as Docker images built from scratch (the image tag <em>is</em> the game version) or as confined systemd/NixOS services from the same image. Graceful stop, real health checks and a console either way</li>
         <li data-tags="ops"><strong><a href="https://github.com/danielbodart/tidewaiter">Tidewaiter</a>:</strong> an auto-updater that waits until no one is playing, detecting players by watching live connections (UDP too). Swaps in a new version only once it's healthy, and rolls back otherwise. Covers Docker and NixOS services</li>
         <li><strong><a href="https://github.com/danielbodart/treesinger">Treesinger</a>:</strong> Hytale sign-in broker. Sign in once and every server shares the login through short-lived sessions; in Docker or socket-activated under systemd</li>
-        <li><strong><a href="https://github.com/danielbodart/portical">Portical</a></strong> (26&#9733;): UPnP port forwarding from a single Docker label or systemd key</li>
-        <li data-tags="ops"><strong>Hands-off pipeline:</strong> an hourly CI job bumps the game versions in the flake, the server rebuilds itself, and Tidewaiter swaps each game in once its players leave</li>
+        <li><strong><a href="https://github.com/danielbodart/portical">Portical</a></strong> UPnP port forwarding from a single Docker label or systemd key</li>
     </ul>
 </dd>
 
@@ -107,14 +106,13 @@
         <li data-tags="ml">NVIDIA Nemotron Speech 600M (FastConformer RNNT) &mdash; inherently incremental streaming ASR</li>
         <li data-tags="ml">CPU-only on Linux by measurement: ~8x realtime. <strong>28x CPU cut</strong> (28 &rarr; 1.4 cores) by fixing ONNX Runtime threads that never idled</li>
         <li data-tags="systems">Meeting capture: virtual PipeWire sink, WebRTC echo cancellation (12.6 dB), stereo Opus + WebVTT with speakers labelled by construction</li>
-        <li data-tags="security">macOS: Fulcio/Sigstore code signing with TCC permission persistence across binary updates</li>
     </ul>
     <p><strong>Spin-off projects:</strong></p>
     <ul>
         <li data-tags="ml"><a href="https://huggingface.co/danielbodart/nemotron-speech-600m-onnx">nemotron-speech-600m-onnx</a> &mdash; ONNX export with 4 precision variants (FP32/FP16/INT8 dynamic/INT8 static). Static INT8 required warm-cache streaming calibration to avoid blank-token collapse</li>
         <li data-tags="ml"><a href="https://huggingface.co/danielbodart/nemotron-speech-600m-coreml">nemotron-speech-600m-coreml</a> &mdash; CoreML conversion: <strong>93% Apple Neural Engine utilisation</strong>, ~15.5x realtime. 3-level numerical validation</li>
         <li data-tags="ml"><a href="https://huggingface.co/danielbodart/ten-vad-ggml">ten-vad-ggml</a> &mdash; ONNX&rarr;GGML converter + complete Zig inference implementation of TEN-VAD. LSTM gate reordering. Verified &lt;0.001 delta vs native</li>
-        <li data-tags="security"><a href="https://github.com/danielbodart/fulcio-codesign">fulcio-codesign</a> &mdash; Zig binary replacing 362-line bash script for Sigstore code signing via Security.framework SPI</li>
+        <li data-tags="security"><a href="https://github.com/danielbodart/fulcio-codesign">fulcio-codesign</a> &mdash;  Fulcio/Sigstore code signing with TCC permission persistence across binary updates</li>
     </ul>
 </dd>
 
