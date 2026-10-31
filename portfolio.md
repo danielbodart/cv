@@ -4,77 +4,58 @@ A comprehensive catalogue of open source contributions, side projects, and techn
 
 ---
 
-## Agent Safety Stack (2026)
+## Agent Safety Stack
 
-Five interlocking open-source projects, named after letterpress parts, that let AI coding agents (Claude Code, Codex) run on NixOS with real tool access but no credentials, no root and no unmediated egress. **685 commits and 348 releases in ~6 weeks** (Sep-Oct 2026), ~41k lines of Zig, ~128k of Go, ~24k of Nix (tests included). Runs daily across my own fleet (2 workstations, a server, a router, a modem and a Mac) via [nix-config](#nix-config----every-machine-in-the-house-as-one-flake).
+Five open-source projects, named after letterpress parts, that let AI coding agents (Claude Code, Codex) run on NixOS with real tool access but no credentials, no root and no unmediated egress. **685 commits, 348 releases** across Zig, Go and Nix; runs daily across my own machines via nix-config.
 
-**Threat model:** the agent is untrusted, including one steered by prompt injection. Every approval it might need (a credential, an outbound request, an SSH signature, a sudo) is moved out of its reach and onto a host daemon that either decides by policy or asks a person.
+**Threat model:** the agent is untrusted, including one steered by prompt injection. Every approval it might need -- a credential, an outbound request, an SSH signature, a sudo -- moves out of its reach to a host daemon that decides by policy or asks a person.
 
-**How it fits together:** you run `claude` or `codex` in a git checkout and **chase** sorts the checkout into a tier (only a path can't be forged, so only a path can put an agent on the host). It launches the agent on the host or in a **flong** container: a fresh in-memory overlay over a Nix-built rootfs, rootless, no capabilities, 4-filter seccomp stack, ~10ms to start, thrown away on exit. The container's DNS and TCP are steered by the kernel (TPROXY) to **frisket** on the host, which refuses names off the allowlist, terminates TLS with a per-session name-constrained CA, swaps a placeholder for the real credential and allows/asks/refuses each request. So the sandbox never holds a credential. Anything only a person should approve goes to **quoin**'s daemons (TPM-backed SSH agent, sudo gate, policy courier), whose questions reach you through **galley**, a single stacking dialog window. Answering "Always" signs the rule into the project's policy with the TPM key.
+**How it fits together:** **chase** picks a sandbox tier for the checkout and launches the agent in a **flong** container. Its traffic is steered by the kernel to **frisket**, which injects credentials and enforces policy. Anything only a person should approve goes to **quoin**, which asks through **galley**.
 
-### flong -- Ephemeral Rootless Containers, 10x Faster than Docker
+### flong -- Ephemeral Rootless Containers
 **Repo:** [danielbodart/flong](https://github.com/danielbodart/flong) | **Language:** Zig, Nix | **153 commits, 112 releases**
 
-Rootless, daemonless, always-ephemeral containers declared with NixOS's own `containers.<name>` option. The rootfs is built once from the Nix closure, and each run gets a fresh in-memory overlay that is discarded on exit.
+Rootless, daemonless containers declared with NixOS's own `containers.<name>` option; each run gets a fresh in-memory overlay that is discarded on exit.
+- **~10ms launch vs ~120ms for Docker**, with no images to pull -- packages are the Nix store paths already on the host
+- No capabilities, `no_new_privs`, nested user namespaces -- not even control over its own network namespace
+- 4-filter seccomp stack compiled at build time, proven byte-for-byte stricter than systemd-nspawn's (and found a 64-bit-compare hole in nspawn's own filter)
+- Single static, libc-free Zig launcher with NixOS VM tests and "proof" builds that fail if a security property doesn't hold
 
-**Technical highlights:**
-- **~10ms launch vs ~120ms for Docker 29.8** (~19ms vs ~200ms with networking), medians of 3x20 runs against rootful and rootless Docker
-- No images to pull: the container's packages are the Nix store paths already on the host
-- Two nested user namespaces. The entrypoint has no capabilities, `no_new_privs` and `max_user_namespaces=0`, so it holds no capability even over its own network namespace (`nft flush`, `ip link`, route changes and `/proc/sys/net` writes all return EPERM)
-- Stack of 4 seccomp filters compiled at build time from systemd's syscall groups by a Zig compiler built on libseccomp. The default `strict` tier refuses ptrace, process_vm_*, io_uring, userfaultfd, keyring and mount calls, at 18-35ns per syscall. A parity check reads each live filter back with `PTRACE_SECCOMP_GET_FILTER`, compares it byte for byte with the compiled one, and proves `strict` only ever refuses more than systemd-nspawn's stack, over every syscall on x86_64, x32 and i386
-- Identified a hole in systemd-nspawn's own filter: its NETLINK_AUDIT rule compares all 64 bits of the argument, so setting a high bit gets past it. flong compares the 32 bits the kernel uses (`masked_eq`)
-- Ordering is the security property: firewall hooks run before pasta gives the namespace any route. Measured: 0 of 20 connections bypassed the rules, against 12 of 12 when the order is reversed
-- Native launcher is a single static Zig binary with no libc, busybox-style subcommands, a typed descriptor table and a linter-enforced raw-syscall layer. Ported from shell to Zig in phases, with NixOS VM tests and "proof" builds that fail when a security property doesn't hold
-- Mount walker opens sources with `RESOLVE_NO_SYMLINKS` and refuses symlinked mount destinations (nspawn follows a planted symlink, as root)
-
-### frisket -- Credential-Swapping Egress Proxy
+### frisket -- Credential-Injecting Egress Proxy
 **Repo:** [danielbodart/frisket](https://github.com/danielbodart/frisket) | **Language:** Go, Nix | **186 commits, 79 releases**
 
-The sandbox holds only a placeholder token. frisket swaps in the real credential on the wire, checks each request against policy and logs everything. Nothing in the sandbox is configured to use it.
-
-**Technical highlights:**
-- **Kernel steering instead of proxy variables:** TPROXY rules inside the sandbox's own network namespace, so database drivers, gRPC and static Go binaries are filtered too. A tool that ignores the proxy has nowhere else to go
-- Listeners are created inside each sandbox's namespace by a short-lived helper and passed back as file descriptors, so nothing of frisket's runs in the sandbox and every upstream dial is the host's
-- DNS allowlist (anything else is NXDOMAIN and never looked up). Egress is allowed only to addresses frisket itself resolved for that session, re-checked at connect time to defeat DNS rebinding. Private, CGNAT, link-local and metadata ranges are always refused
-- A per-session CA, name-constrained to the routed hosts; the key never leaves the daemon
-- Policy per route by method and path, plus git push/fetch, per-field GraphQL mutation rules (strict hand-written parser), SSH commands with no key in the sandbox, and Docker scoped to the project's own containers. Each request can be allowed, refused or held while a person is asked
-- "Record" mode runs an agent permissively and proposes the minimal grant it needed
-- Hard problems documented with measurements: Go programs are multi-threaded before `main`, so `setns(CLONE_NEWUSER)` fails with EINVAL and a forked helper is needed; leaving the thread unlocked after an in-process `setns` let 13 of 200 upstream connections leave through the sandbox's network; entering the namespace once per step instead of once per command cut a 40ms hook to 23ms
-- Compared against Docker Sandboxes, Anthropic's sandbox-runtime, httpjail, Fly's tokenizer and Stripe's smokescreen: the only one combining kernel steering, placeholder credentials, method/path rules and per-request human approval
+The sandbox holds only a placeholder token; frisket swaps in the real credential on the wire, checks each request against policy and logs everything.
+- **Kernel steering (TPROXY), not proxy variables** -- tools that ignore proxies have nowhere else to go
+- DNS allowlist with rebinding protection; private and metadata ranges always refused
+- Per-session, name-constrained CA for TLS termination; the key never leaves the daemon
+- Rules by method and path, git operation, GraphQL mutation and SSH command -- each request allowed, refused or held for a person
+- "Record" mode proposes the minimal grant an agent actually needed
 
 ### chase -- Agent Policy for NixOS
 **Repo:** [danielbodart/chase](https://github.com/danielbodart/chase) | **Language:** Go, Nix | **228 commits, 131 releases**
 
-Decides which sandbox a checkout gets, which apps run in it, and which credentials they use. You run `claude`, `codex` or `chase shell` in a checkout, and chase picks the tier and launches on the host or in a flong container networked through frisket.
+Decides which sandbox a checkout gets, which apps run in it, and which credentials they use.
+- 5 tiers (host, ops, trusted, work, strict) chosen by checkout path -- the one thing an agent can't forge
+- **5,400+ API operations** (Cloudflare, GitHub, Hugging Face) plus 394 Google Cloud APIs classified read/write/guarded from vendor API descriptions
+- Per-project grants signed with a TPM key; an unsigned or edited grant does nothing
+- Apps for claude, codex, git, gcloud, rootless Docker, SSH and dev shells, each with scoped state
 
-**Technical highlights:**
-- 5 tiers (host, ops, trusted, work, strict) matched by path, repo, owner or root-commit author domain. Only a path can't be forged, so only a path can put an agent on the host; a remote's name can raise a checkout at most to trusted
-- **5,400+ API operations** generated from vendor API descriptions and classed as read, write or guarded (Cloudflare 3,541, GitHub 1,497, Hugging Face 365), plus 394 Google Cloud discovery documents. Each catalog is pinned, so a reviewed diff shows exactly what becomes newly allowed
-- Per-project grants (`chase.json`) are strict JSON, merged as RFC 7396 patches over the tier, in canonical form and SSH-signed through quoin's TPM signer. An unsigned or changed grant does nothing
-- `chase record`: run an agent, answer what the tier would refuse, and get a proposed grant (by exact path or by operation)
-- Apps include claude, codex, git, GitHub, Cloudflare, Hugging Face, gcloud (as the project's service account), rootless Docker, SSH to your own machines (ops tier, with per-command expectations), mise and nix devShells, each with state scoped to the session, workspace, tier or host
-
-### quoin -- Host Gatekeepers: TPM SSH Agent and sudo Gate
+### quoin -- Host Gatekeepers
 **Repo:** [danielbodart/quoin](https://github.com/danielbodart/quoin) | **Language:** Go, Zig | **85 commits, 12 releases**
 
-Three small daemons, each running as its own system user, sit between running programs (a terminal, a claude, a proxy) and what only a person should approve: an SSH key, root, and a project's rules.
+Small daemons, each its own system user, guarding what only a person should approve: an SSH key, root, and a project's rules.
+- **TPM-backed SSH agent:** keys never leave the chip; signs silently for a human's terminal, asks about an agent's `git push`
+- **sudo gate:** a sudo plugin written in Zig -- typed sudo is untouched, an agent's sudo waits for human approval
+- **Remote approval:** `ssh -A host sudo` approved by your own TPM key on your own screen; works on macOS too
+- Formal threat model backed by spikes in NixOS VMs
 
-**Technical highlights:**
-- **quoin-signer -- hardware-level signing:** an SSH agent whose ECDSA P-256 keys live in the TPM (~43ms per signature with the key kept loaded, ~225ms cold), so no process can copy them. Only the signer's system user can open `/dev/tpmrm0`, enforced by a NixOS assertion. It identifies the requester from `SO_PEERPIDFD` and a walk up the process chain, signs silently for a human's terminal tab and asks about an agent's `git push`. Verifies OpenSSH session-binding on forwarded signing requests
-- **quoin-sudo -- a custom sudo gate:** a sudo audit plugin and PAM helper written in Zig against sudo's plugin ABI, with a Go gate daemon. A sudo typed in a terminal is stock sudo; an agent's no-tty sudo shows the resolved command and takes a password that opens a time-boxed approval window pinned to one galley process. A "danger" catalogue (shell `-c`, units that guard the machine, programs outside the system profile) is always asked; a lockout check guards against a bad plugin ever locking out sudo
-- **Remote mode:** `ssh -A host sudo ...` is approved by a signature from your own TPM key, asked on your own screen. Ported to macOS through nix-darwin, with a pre-flight loader check
-- **quoin-courier:** carries each project's signed policy between your home directory and gatekeepers that cannot read it. Clicking "Always" signs the new rule into the project's policy file
-- Formal threat model (5 actor classes, trusted computing base, accepted limits) backed by spikes in NixOS VMs
+### galley -- Stacking Approval Dialogs
+**Repo:** [danielbodart/galley](https://github.com/danielbodart/galley) | **Language:** Go, GJS (GTK 4) | **33 commits, 14 releases**
 
-### galley -- Stacking Zenity Drop-In
-**Repo:** [danielbodart/galley](https://github.com/danielbodart/galley) | **Language:** Go, GJS (GTK 4 / libadwaita) | **33 commits, 14 releases**
-
-The human-in-the-loop UI. Every question goes into one shared window as a queue, so bursts of approvals from parallel agent sessions don't each steal keyboard focus.
-
-**Technical highlights:**
-- Accepts all of zenity 4.2.2's command line except `--html` and `--url`, with zenity's parsing, errors, output and exit codes, compared with zenity's own over thousands of command lines
-- Static Go client (~1ms start) plus a socket-activated GJS daemon: ~90ms for the first question, ~3ms per round trip after that. The connection is the question, so a killed caller withdraws its item
-- Hardened against spoofed answers: peers checked by `SO_PEERCRED`, no answer actions exported on D-Bus, GTK's accessibility bus off by default, caller markup stripped to emphasis only, passwords never stored, plus a services socket that only serves named system users, with normal, warning and danger levels
+A zenity drop-in that puts every question in one shared queue window, so bursts of approvals from parallel agents don't each steal focus.
+- Full zenity command-line compatibility, verified against zenity over thousands of invocations
+- ~3ms per question once warm; a killed caller withdraws its question
+- Hardened against spoofed answers (peer credential checks, no exported answer actions)
 
 ---
 
