@@ -33,6 +33,9 @@
         <dd><a href="https://www.linkedin.com/in/danielbodart/">danielbodart</a></dd>
     </dl>
     <div class="filter-bar">
+        <button data-filter="agents">AI Agents</button>
+        <button data-filter="memory">Graph / Memory</button>
+        <button data-filter="ops">Nix / Ops</button>
         <button data-filter="ml">ML / Inference</button>
         <button data-filter="systems">Systems</button>
         <button data-filter="build">Build / CI</button>
@@ -43,19 +46,67 @@
 
 <h2>Profile</h2>
 
-<p>Self-taught problem solver. "Impossible" is a challenge word. 30 years of going deep &mdash; picking up whatever language or layer of the stack a problem demands, from GPU memory models to compiler bytecode to ML inference runtimes. Learning everything from first principles means I often see things differently and find novel solutions where conventional approaches get stuck. Not afraid to read the spec, fork the library, or reverse-engineer the API.</p>
+<p>Self-taught problem solver. "Impossible" is a challenge word. 30 years of going deep &mdash; picking up whatever language or layer of the stack a problem demands, from GPU memory models to compiler bytecode to ML inference runtimes. Learning everything from first principles means I often see things differently and find novel solutions where conventional approaches get stuck. Not afraid to read the spec, fork the library, or reverse-engineer the API. Lately: making machines safe for autonomous AI agents, and building graph-based agent memory.</p>
 
 <h2>Recent Technical Work (2025-2026)</h2>
 
 <dl>
 
-<dt><a href="https://github.com/danielbodart/capsper">Capsper</a> &mdash; Push-to-Talk Voice Dictation</dt>
+<dt>Agent Safety Stack &mdash; <a href="https://github.com/danielbodart/flong">flong</a>, <a href="https://github.com/danielbodart/frisket">frisket</a>, <a href="https://github.com/danielbodart/chase">chase</a>, <a href="https://github.com/danielbodart/quoin">quoin</a>, <a href="https://github.com/danielbodart/galley">galley</a></dt>
+<dd data-tags="agents security systems opensource">
+    <p>Lets Claude Code and Codex run on NixOS with real tools but no credentials, no root and no unmediated egress. The agent is treated as untrusted; every approval moves to a host daemon that decides by policy or asks a person. <strong>Zig, Go, Nix</strong>. 685 commits, 340+ releases in 6 weeks.</p>
+    <ul>
+        <li data-tags="systems"><strong>flong:</strong> ephemeral rootless containers from NixOS config &mdash; <strong>~10ms start vs Docker's ~120ms</strong>. No capabilities, 4-filter seccomp stack proven byte-for-byte stricter than systemd-nspawn's</li>
+        <li data-tags="security"><strong>frisket:</strong> kernel-steered (TPROXY) egress proxy. The sandbox holds a placeholder; the real token is swapped in on the wire, with allow/ask/refuse per request down to the git operation and GraphQL mutation</li>
+        <li data-tags="agents"><strong>chase:</strong> picks a sandbox tier by unforgeable checkout path. 5,400+ API operations classified read/write/guarded; per-project grants signed by a TPM key</li>
+        <li data-tags="security"><strong>quoin:</strong> TPM-backed SSH agent (hardware-level signing; keys never leave the chip) and a sudo gate written as a Zig sudo plugin &mdash; an agent's <code>git push</code> or <code>sudo</code> waits for a human, even across machines via <code>ssh -A</code></li>
+        <li data-tags="agents"><strong>galley:</strong> zenity drop-in that stacks approvals from parallel agent sessions into one queue</li>
+    </ul>
+</dd>
+
+<dt><a href="https://github.com/bodar/mogwai-db">mogwai-db</a> &mdash; Graph Database &amp; Agent Memory</dt>
+<dd data-tags="memory agents opensource">
+    <p>TinkerPop 4 graph database with SQLite as its engine. One graph = one SQLite database, running in the browser, at the edge, on bare metal or in Docker. <strong>TypeScript, Bun</strong>. 2,500 commits, 300+ releases in 4 months.</p>
+    <ul>
+        <li data-tags="memory"><strong>Compiles each whole Gremlin traversal into one SQL statement</strong> &mdash; no step-by-step interpreter. ~82% of the official TinkerPop conformance suite via the unmodified client, ratcheted in CI</li>
+        <li data-tags="systems">Four runtimes from one core: SQLite WASM on OPFS, Cloudflare Durable Objects (scale to zero), single binaries for 5 OS/arch targets, Docker</li>
+        <li data-tags="memory">Query plans fixed at compile time: 1-hop lookup <strong>9.8s &rarr; 19ms</strong> without statistics. FTS, graph algorithms, federation and CouchDB-style replication, all in SQL</li>
+        <li data-tags="agents"><strong>Direction &mdash; agent memory:</strong> physically isolated per-agent graphs that cost nothing idle, queried via a language and code sandbox next to the data rather than a bag of tools</li>
+        <li data-tags="agents">Built through parallel Claude Code agent workflows behind an 8-level test ladder</li>
+    </ul>
+</dd>
+
+<dt>Nix Fleet &mdash; Reproducible, Rollback-able, Agent-Safe Machines</dt>
+<dd data-tags="ops security agents">
+    <p>Every machine in the house in one flake: NixOS desktop, laptop and server, nix-darwin Mac, OpenWrt router and 4 access points, and a Raspberry Pi. 10 hosts, one rebuild command. 548 commits in 8 weeks.</p>
+    <ul>
+        <li data-tags="security">Secure Boot (lanzaboote), LUKS sealed to the TPM, SSH and secrets keys that never leave the TPM</li>
+        <li data-tags="agents">Claude Code and its MCP servers pinned as Nix packages with read-only config. The agent safety stack is wired in fleet-wide, and any bad change is one reboot from rollback</li>
+        <li data-tags="ops">Offline bare-metal reinstall from one encrypted USB key; home server upgrades itself hourly from trunk, waiting until nobody is playing</li>
+        <li data-tags="ops"><a href="https://github.com/danielbodart/nix-raspios-imagebuilder">nix-raspios-imagebuilder</a> (locked Pi OS images, A/B upgrades with auto-fallback) and <a href="https://github.com/danielbodart/claude-desktop">claude-desktop</a> flake</li>
+    </ul>
+</dd>
+
+<dt>Game Server Fleet &mdash; <a href="https://github.com/danielbodart/chandlery">Chandlery</a>, <a href="https://github.com/danielbodart/tidewaiter">Tidewaiter</a>, <a href="https://github.com/danielbodart/treesinger">Treesinger</a>, <a href="https://github.com/danielbodart/portical">Portical</a></dt>
+<dd data-tags="ops opensource">
+    <p>Self-hosted Minecraft Bedrock, Valheim and Hytale servers for me and my kids, run as hands-off infrastructure. Game updates flow in automatically and never interrupt anyone mid-game. <strong>Go, Docker, Nix</strong>.</p>
+    <ul>
+        <li data-tags="ops"><strong>Chandlery:</strong> Docker-native game-server images built from scratch. The game is checksum-verified and baked in, so the image tag <em>is</em> the game version. Graceful stop, real health checks, console via <code>docker attach</code></li>
+        <li data-tags="ops"><strong>Tidewaiter:</strong> an auto-updater that waits until no one is playing, detecting players by watching live connections (UDP too). Swaps in a new version only once it's healthy, and rolls back otherwise. Covers Docker and NixOS services</li>
+        <li><strong>Treesinger:</strong> Hytale sign-in broker. Sign in once and every server shares the login through short-lived sessions; adding a server needs no config</li>
+        <li><strong>Portical</strong> (26&#9733;): UPnP port forwarding from a single Docker label or systemd key</li>
+        <li data-tags="ops"><strong>Hands-off pipeline:</strong> an hourly CI job bumps the game versions in the flake, the server rebuilds itself, and Tidewaiter swaps each game in once its players leave</li>
+    </ul>
+</dd>
+
+<dt><a href="https://github.com/danielbodart/capsper">Capsper</a> &mdash; Voice Dictation &amp; Meeting Transcription</dt>
 <dd data-tags="ml systems opensource">
-    <p>Fully local voice dictation daemon for Linux and macOS. Hold CapsLock, speak, release &mdash; text appears in any focused window. <strong>Zig</strong>. 200+ releases.</p>
+    <p>Fully local voice dictation and meeting transcription for Linux and macOS. Hold CapsLock, speak, release &mdash; text appears in any focused window. <strong>Zig</strong>. 250+ releases.</p>
     <ul>
         <li data-tags="systems"><strong>Single Zig binary:</strong> keyboard interception (evdev/CGEventTap), audio capture (PipeWire/CoreAudio), mel spectrogram, ONNX/CoreML inference, SentencePiece detokenisation, keystroke injection</li>
         <li data-tags="ml">NVIDIA Nemotron Speech 600M (FastConformer RNNT) &mdash; inherently incremental streaming ASR</li>
-        <li data-tags="systems">Multi-client TCP server sharing model weights in VRAM/RAM across independent pipelines</li>
+        <li data-tags="ml">CPU-only on Linux by measurement: ~8x realtime. <strong>28x CPU cut</strong> (28 &rarr; 1.4 cores) by fixing ONNX Runtime threads that never idled</li>
+        <li data-tags="systems">Meeting capture: virtual PipeWire sink, WebRTC echo cancellation (12.6 dB), stereo Opus + WebVTT with speakers labelled by construction</li>
         <li data-tags="security">macOS: Fulcio/Sigstore code signing with TCC permission persistence across binary updates</li>
     </ul>
     <p><strong>Spin-off projects:</strong></p>
@@ -110,8 +161,10 @@
 <dl class="open-source">
 <dt><a href="https://github.com/danielbodart/masked-diffusion-text">Masked Diffusion Text</a></dt>
 <dd data-tags="ml">Discrete text diffusion experiment &mdash; fine-tuning ModernBERT-large to generate text through iterative unmasking, inspired by <a href="https://arxiv.org/abs/2406.07524">MDLM</a>. Cosine/log-linear/Fibonacci unmasking schedules, Gumbel sampling. Python</dd>
+<dt><a href="https://github.com/danielbodart/dragoman">Dragoman</a></dt>
+<dd data-tags="agents opensource">Claude Code plugin running OpenAI Codex as a native peer agent: bridges Codex app-server JSON-RPC to MCP, relays approvals into Claude's UI, and compiles Claude's permission settings into Codex policy. TypeScript</dd>
 <dt><a href="https://github.com/danielbodart/claude-code-plugins">Claude Code Plugins</a></dt>
-<dd data-tags="security">Security-focused plugins: URL allowlist (3-level match to prevent data exfiltration), trunk-based dev workflow, code review. <a href="https://github.com/danielbodart/claude-code-sandbox">Sandbox settings</a> for credential and secret protection. Red-team tested 19 exfiltration vectors</dd>
+<dd data-tags="agents security">Security-focused plugins: URL allowlist (3-level match to prevent data exfiltration), trunk-based dev workflow, code review. <a href="https://github.com/danielbodart/claude-code-sandbox">Sandbox settings</a> for credential and secret protection. Red-team tested 19 exfiltration vectors</dd>
 </dl>
 
 <h2>Open Source Libraries</h2>
