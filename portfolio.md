@@ -103,60 +103,42 @@ Fully local push-to-talk dictation for Linux and macOS: hold CapsLock, speak, re
 ### Zerocast -- Low-Latency Application Sharing
 **Repo:** [danielbodart/zerocast](https://github.com/danielbodart/zerocast) | **Language:** C, Zig, TypeScript, Objective-C | **192 commits, 124 releases**
 
-A developer-focused remote application and terminal sharing tool with GPU-direct capture, hardware encode, and P2P WebRTC streaming to a browser viewer. Measured as low as ~200us prepare + 1.6ms encode at 1080p30.
+Remote application and terminal sharing with GPU-direct capture, hardware encode and peer-to-peer WebRTC streaming to a browser. ~200us prepare + 1.6ms encode at 1080p30.
 
 **Technical highlights:**
-- **Zero CPU copy pipeline:** NvFBC GPU texture capture -> CUDA interop (zero-copy) -> NVENC hardware encode (AV1/HEVC) -> WebRTC P2P. Pixels never leave the GPU.
-- Dual codec: AV1 (preferred, RTX 40-series+) with HEVC fallback (GTX 950+), auto-detected at startup
-- Multi-platform capture:
-  - Linux/NVIDIA: NvFBC + headless Xorg (per-app isolated X server)
-  - Linux/Wayland: embedded wlroots-based headless compositor + VA-API encode (Intel/AMD) with DMA-BUF frame capture and damage tracking
-  - macOS: ScreenCaptureKit + VideoToolbox HEVC + CGVirtualDisplay (in-process, eliminating IPC)
-- Forked [wlroots](https://github.com/danielbodart/wlroots) to filter CCS modifiers from GBM allocation for VA-API compatibility
-- Forked [libdatachannel](https://github.com/danielbodart/libdatachannel) adding `abs-capture-time` RTP extension (true capture-to-render latency measurement) and `playout-delay` extension (zero jitter buffer)
-- Multi-cursor collaboration: SVG overlay with per-viewer colored cursors. Binary wire protocol over unreliable/unordered WebRTC data channels (UDP semantics)
-- Terminal sharing: PTY over WebRTC data channel to xterm.js with 256KB replay buffer and asciinema recording
-- Cloudflare Worker signaling: Durable Objects with WebSocket Hibernation API (zero cost during active streaming). STUN for ~85% of connections, Cloudflare TURN as fallback
-- Remote input injection: XTEST on Linux, CGEvent on macOS, with platform-independent keycode mapping
-- Latency telemetry: end-to-end, server, decode, jitter buffer, render, and network breakdown in viewer stats panel
+- **Zero CPU copy pipeline:** GPU capture -> hardware AV1/HEVC encode -> WebRTC; pixels never leave the GPU
+- **Cross-platform capture:** NVIDIA (NvFBC), Wayland (embedded wlroots compositor + VA-API), macOS (ScreenCaptureKit + VideoToolbox + virtual displays)
+- Forked libdatachannel to add capture-time and playout-delay RTP extensions for true end-to-end latency measurement and zero jitter buffer
+- Multi-cursor collaboration and terminal sharing (PTY to xterm.js) over WebRTC data channels
+- Cloudflare Durable Objects signalling with WebSocket Hibernation (no cost while streaming)
 
 ---
 
 ### Talebrary -- Interactive Fiction Platform
-**Repo:** [danielbodart/talebrary](https://github.com/danielbodart/talebrary) | **Language:** TypeScript | **558 commits** | repo private, site behind sign-in since Aug 2026
+**Repo:** danielbodart/talebrary (private) | **Language:** TypeScript | **558 commits** | [talebrary.com](https://talebrary.com/)
 
-A web application serving 2,000+ interactive fiction games playable in the browser, with AI-generated cover art and illustrations. Built on Cloudflare Workers + D1 + R2.
+2,000+ interactive fiction games playable in the browser, with AI-generated cover art and suggested actions. Built on Cloudflare Workers, D1, R2 and Workflows.
 
 **Technical highlights:**
-- Dual-runtime architecture: single codebase runs on both Bun (local dev) and Cloudflare Workers (production) via dependency injection. Universal HTTP type: `Http = (request: Request) => Promise<Response>` -- no frameworks, just function composition
-- Server-side JSX rendering with custom `@bodar/jsx2dom` + linkedom, slot-based template system (named slots + src slots with recursive internal fetch)
-- Durable Workflow abstraction: portable workflow pattern (`DirectRunner` for Bun/tests, `CloudflareWorkflowRunner` for production) matching Cloudflare's `WorkflowStep.do()` API
-- AI cover art pipeline: 3-step fallback chain (flux-2-klein-9b style transfer -> scene-enhanced transfer -> Leonardo Phoenix default)
-- In-browser IF player: custom elements (`<interactive-fiction>`, `<buffer-window>`, `<user-input>`) running wasiglk interpreters in a Web Worker
-- Custom LLM eval suite (`evals/`): evaluation framework for AI features with scorers for JSON validity, schema matching, tree structure, and vision-based judging. Runs against multiple Cloudflare AI models, computes per-model averages and latencies
-- D1 database with materialized avg_rating, denormalized gamelinks, automated quarterly sync from IFDB via GitHub Actions
-- Solved SQLITE_TOOBIG by storing workflow-generated images in R2 instead of Cloudflare Workflows SQLite persistence
-- **Jul-Aug 2026:** LLM "enrich" endpoint with a few-shot prompt and its own eval harness, D1-based rate limiting and AI spend caps, fixed CloudflareWorkflowRunner hanging under concurrent bursts
-- Spin-off: [dullahan](https://github.com/bodar/dullahan) (`@bodar/dullahan` on JSR) -- headless TypeScript port of text-engine returning structured engine state instead of DOM output
+- Single codebase runs on Bun locally and Cloudflare Workers in production -- no framework, just function composition
+- Portable durable-workflow abstraction matching Cloudflare's Workflows API
+- AI image pipeline with a 3-step model fallback chain, plus rate limiting and AI spend caps
+- **LLM eval suite built from scratch:** scorers for JSON validity, schema match, tree structure and vision-based judging across multiple models
+- In-browser player running WasiGlk interpreters in a Web Worker; spin-off [dullahan](https://github.com/bodar/dullahan) is a headless text-adventure engine on JSR
 
 ---
 
 ### WasiGlk -- Interactive Fiction Interpreters in WebAssembly
 **Repo:** [bodar/wasiglk](https://github.com/bodar/wasiglk) | **Language:** Zig, TypeScript, C | **127 commits**
 
-A platform for running interactive fiction interpreters in the browser via WebAssembly. Compiles 17 different C-based interpreters to wasm32-wasi using Zig's build system.
+Runs classic interactive fiction interpreters in the browser by compiling them to WebAssembly with Zig.
 
 **Technical highlights:**
-- **17 interpreters rebuilt from x86 to WASM:** AdvSys, Agility, Alan2, Alan3, Fizmo, Git, Glulxe, Hugo, JACL, Level9, Magnetic, Plus, Scare, Scott, TADS 2, TADS 3, Taylor
-- **Dramatic binary size reductions vs Emscripten:** Glulxe 87% smaller (1.68MB -> 222KB), Hugo 83% smaller, TADS2 83% smaller (3.9MB -> 669KB)
-- Full Zig implementation of the GLK I/O layer (RemGlk JSON protocol) for browser communication
-- JSPI (JavaScript Promise Integration) for async I/O instead of Asyncify -- smaller binaries, better performance
-- Forked [libfizmo](https://github.com/chrender/libfizmo) to add WASI platform guards for the Z-machine interpreter
-- Unicode case conversion with full mapping tables (186 toLower + 204 toUpper ranges)
-- TypeScript client library published to JSR as `@bodar/wasiglk`
-- Converted 1500+ lines of Python regtest tooling to a single Bun TypeScript script
-- **Interpreter toolchain migration: Rust -> Zig** -- switched from Emscripten (C->JS) to Zig (C->WASM) for cross-compilation
-- **Jul 2026:** graphics (Blorb images; Hugo and Scare via data-URIs), window layout tree, `.glktra` transcript record/replay, agt2agx converter, single-file zip story delivery
+- **17 C interpreters compiled to wasm32-wasi** (Glulxe, TADS 2/3, Hugo, Alan, Level9, Magnetic and more)
+- **67-87% smaller binaries than Emscripten** (Glulxe 1.68MB -> 222KB)
+- Full Zig implementation of the Glk I/O layer, including graphics and transcript record/replay
+- JSPI for native browser async instead of Asyncify
+- TypeScript client published to JSR as `@bodar/wasiglk`
 
 ---
 
