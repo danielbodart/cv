@@ -323,40 +323,33 @@ JSX runtime:        --                        @bodar/jsx2dom (JSR)
 ## Developer Tooling & AI Agents
 
 ### Dragoman -- Codex as a Native Claude Code Subagent
-**Repo:** [danielbodart/dragoman](https://github.com/danielbodart/dragoman) | **Language:** TypeScript (Bun) | **171 commits, 34 releases** (Aug-Sep 2026)
+**Repo:** [danielbodart/dragoman](https://github.com/danielbodart/dragoman) | **Language:** TypeScript (Bun) | **171 commits, 34 releases**
 
-A Claude Code plugin that runs OpenAI Codex as a background peer agent, so its approvals, progress and permissions feel built into Claude. The official Codex plugin hard-codes `approvalPolicy: never` and a fixed sandbox, so work outside the sandbox just fails and none of Claude's guardrails reach Codex. Dragoman's rule is *mirror Claude, don't reinvent it*.
-
-**Technical highlights:**
-- **Two protocols bridged:** talks to `codex app-server` over JSON-RPC (TypeScript bindings generated from Codex's protocol schema) and exposes itself to Claude as an MCP server (`codex_run`/`status`/`steer`/`cancel`/`continue`/`review`), plus a skill and a dedicated subagent
-- **Native approval relay:** Codex approval requests become async MCP `elicitation/create` prompts in Claude's own UI, using Codex's own decision ids, so Codex escalates under your rules instead of failing
-- **Config compiler:** compose (merge Claude's 4 settings layers by Claude's own rules) -> compile (pure `mirror` to a Codex policy) -> provision (isolated per-run `CODEX_HOME`, never touching `~/.codex`)
-- Each Claude permission mode (plan/default/acceptEdits/auto/dontAsk/bypass) maps to a Codex approval policy, reviewer and sandbox scope. Allow/deny Bash rules compile to Codex execpolicy (fail-closed); sandbox filesystem and network domains to permission profiles and Codex's network proxy
-- **Heartbeat filter:** collapses Codex's ~80-type notification stream into a few milestones -- a pure function, tested without a socket
-- Steer a run mid-flight, continue on the same thread, or run Codex's dedicated code review over a diff
-- Ships as a ~280KB single-bundle plugin with automated marketplace releases
+A Claude Code plugin that runs OpenAI Codex as a background peer agent, with its approvals, progress and permissions feeling built into Claude -- and Claude's guardrails applying to Codex.
+- **Bridges two protocols:** Codex's app-server JSON-RPC on one side, an MCP server on the other (run, status, steer, cancel, continue, review)
+- **Native approvals:** Codex's approval requests appear as prompts in Claude's own UI instead of failing
+- **Config compiler:** Claude's permission modes, allow/deny rules, sandbox paths and network domains compiled into an equivalent Codex policy
+- Steer a run mid-flight, continue a thread, or run Codex's code review over a diff
 
 ### browser-agent-os -- WebAssembly Microkernel in the Browser
-**Repo:** [danielbodart/browser-agent-os](https://github.com/danielbodart/browser-agent-os) | **Language:** Zig, TypeScript | **20 commits** (May-Jul 2026, exploratory)
+**Repo:** [danielbodart/browser-agent-os](https://github.com/danielbodart/browser-agent-os) | **Language:** Zig, TypeScript | exploratory
 
-A browser-resident microkernel for capability-scoped, multi-process AI agents: WASM is the sandbox, Web Workers are processes, OPFS is the disk. Environment-agnostic WASI Preview 1 kernel in TypeScript (Bun and browser hosts), Zig `sh.wasm` shell (pipes, redirects, REPL) via custom `proc_spawn`/`proc_join`/`fd_pipe` syscalls, 16 Zig coreutils compiled to wasm32-wasi, xterm.js terminal, JSPI/Atomics transports, headless-Chrome CI.
+A browser-resident microkernel for capability-scoped, multi-process AI agents: WASM is the sandbox, Web Workers are processes, OPFS is the disk.
+- WASI kernel in TypeScript, running in the browser or on Bun
+- Zig shell with pipes and redirects, plus 16 Zig coreutils compiled to WebAssembly
 
 ### Claude Code Plugins
 **Repo:** [danielbodart/claude-code-plugins](https://github.com/danielbodart/claude-code-plugins) | 3 stars | 76 commits
-
-A collection of Claude Code plugins for security, git workflows, code review and research:
-- **url-allowlist:** Restricts WebFetch to URLs discovered via WebSearch with three-level match (exact/prefix/domain) to prevent data exfiltration via query parameters
-- **commit-push-trunk:** Trunk-based development workflow with git worktree support and CI build monitoring
-- **code-review-local:** Adapted official code-review for local/trunk-based workflows (5 parallel agents, confidence scoring)
-- **graphical-sudo:** Graphical sudo prompts via `SUDO_ASKPASS`, preferring galley with zenity as fallback (superseded on NixOS by quoin's sudo gate)
-- **statusline:** context usage, 5h/7d quota bars from the `rate_limits` payload, effort level, collapsed worktree paths
-- **notification-sound**, **web-researcher**
-- Includes systematic red-team testing documentation (19 exfiltration vectors tested)
+- **url-allowlist:** WebFetch limited to URLs found via search, blocking data exfiltration through query strings; red-team tested against 19 exfiltration vectors
+- **commit-push-trunk:** trunk-based workflow with worktree support and CI monitoring
+- **code-review-local:** parallel-agent code review for local, trunk-based work
+- **statusline:** context usage, quota bars and effort level
+- **graphical-sudo**, **web-researcher**, **notification-sound**
 
 ### Claude Code Sandbox
 **Repo:** [danielbodart/claude-code-sandbox](https://github.com/danielbodart/claude-code-sandbox)
 
-Deny rules for remote-mutating operations across git, gcloud, wrangler, gh, and hf CLIs. Filesystem denyRead for ~/.ssh, ~/.gnupg, AWS/GCP credentials, .env files. The settings-level precursor to the [Agent Safety Stack](#agent-safety-stack-2026), which moves enforcement out of the agent's config and into the kernel and host daemons.
+Settings-level deny rules blocking remote-mutating CLI commands and reads of credentials and secrets. The lightweight precursor to the [Agent Safety Stack](#agent-safety-stack).
 
 ---
 
