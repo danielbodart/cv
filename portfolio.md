@@ -251,90 +251,48 @@ TypeScript successors to my long-running Java libraries, plus new work:
 
 ## Established Open Source Libraries (Java)
 
-A coherent ecosystem of Java libraries created from ~2011 onwards, pioneering functional programming patterns in Java **years before Java 8 Streams existed**. All published to Maven (repo.bodar.com).
+Functional programming for Java **before Java 8 Streams existed**, all published to Maven.
 
 ### TotallyLazy -- Functional Programming for Java
-**Repo:** [bodar/totallylazy](https://github.com/bodar/totallylazy) | **318 stars, 32 forks** | Apache 2.0
-
-A comprehensive FP library inspired by Clojure's collection library and ML-family naming conventions (Standard ML, OCaml, F#, Scala, Haskell):
-- Lazy evaluation for Iterable, Iterator, Arrays, Char Sequences, Dates, Numbers
-- Persistent data structures: PersistentSet, PersistentMap, PersistentSortedMap, PersistentList
-- Functors and Applicative Functors
-- Runtime multi-method dispatch and pattern matching
-- Concurrent map (`mapConcurrently`) for background thread distribution
-- Infinite sequences: `primes()`, `fibonacci()`, `powersOf(3)`, `iterate(increment, 1)`
-- Tail-call optimisation (via JCompilo bytecode post-processing)
-- Also ported to Objective-C (OCTotallyLazy)
-- **Historical significance:** brought Haskell/ML-style FP to Java before `java.util.stream` was added in Java 8 (2014). The v1.x branch targets Java 7+.
+**Repo:** [bodar/totallylazy](https://github.com/bodar/totallylazy) | **318 stars, 32 forks**
+- Lazy evaluation across iterables, sequences, strings, dates and numbers
+- Persistent data structures (sets, maps, sorted maps, lists)
+- Functors, applicatives, multi-method dispatch and pattern matching
+- Infinite sequences and concurrent mapping
+- Ported to Objective-C (OCTotallyLazy) and TypeScript
 
 ### UtterlyIdle -- REST Framework for Java
 **Repo:** [bodar/utterlyidle](https://github.com/bodar/utterlyidle) | **96 stars, 18 forks**
+- **~1ms startup**, configuration in code, no static state
+- In-memory container for fast tests, plus Servlets, Jetty, Undertow and more
+- One uniform API for client and server
 
-A REST library inspired by JSR-311 (JAX-RS) with distinctive design:
-- **~1ms startup time** (vs seconds for Spring Boot)
-- Configuration in code (no XML), no static state (fully testable)
-- Multiple container support: Servlets, Jetty, SimpleWeb, Java 6 HttpServer, Undertow, **In-Memory** (for tests)
-- Uniform client/server API using composition over inheritance
-- DSL can bind HTTP methods directly to 3rd-party Java classes
-- Request/Response objects can be `new`'d up, `toString`'d, and parsed
-
-### JCompilo -- Advanced Java Compiler and Build Tool
-**Repo:** [bodar/jcompilo](https://github.com/bodar/jcompilo) | **41 stars, 3 forks**
-
-A build tool AND compiler extension:
-- **20-80% faster** than all other Java build tools (the foundation for the 10-second build)
-- **Bytecode post-processing** -- modifies compiled output
-- **Tail-recursion call optimisation** via `@tailrec` annotation and bytecode transformation
-- **Zero-copy Jar creation**
-- Dependency resolution via ShavenMaven (Pack200 support, parallel downloads, no transitive dependencies)
-- 100% convention (no build file needed) or customizable in Java code
+### JCompilo -- Java Compiler and Build Tool
+**Repo:** [bodar/jcompilo](https://github.com/bodar/jcompilo) | **41 stars**
+- **20-80% faster** than other Java build tools; no build file needed
+- Bytecode post-processing, including tail-call optimisation via `@tailrec`
+- Zero-copy JAR creation
 
 ### YatSpec -- Self-Documenting Tests
 **Repo:** [bodar/yatspec](https://github.com/bodar/yatspec) | **59 stars, 24 forks**
+- Human-readable HTML specs generated from plain JUnit tests -- full IDE refactoring support
+- **Automatic sequence diagrams** for microservice interactions
 
-A BDD test framework generating human-readable HTML reports from pure JUnit tests:
-- No separate specification files (unlike Cucumber, Concordion, Fit)
-- Full IDE refactoring support -- tests are just Java
-- **Automatic sequence diagram generation** for microservice architectures
-- Given/When/Then with automatic capturing
-- Tabular data tests, cross-test links, "Interesting Givens" highlighting
-
-### Yadic -- Tiny DI Container
-**Repo:** [bodar/yadic.java](https://github.com/bodar/yadic.java) | **12 stars, 2 forks**
-
-A radically minimal dependency injection container:
-- **Only 12KB** in size
-- **1 million resolves in 0.28 seconds**
-- **Only 2 main functions** -- extreme simplicity
-- Built-in decorator pattern support
-- Also available in .NET and Ruby versions
-
-### LazyRecords -- LINQ for Java
-**Repo:** [bodar/lazyrecords](https://github.com/bodar/lazyrecords) | **8 stars, 3 forks**
-
-A uniform functional API for data access across multiple backends:
-- Supported: MemoryRecords, STMRecords (Software Transactional Memory), LuceneRecords, SqlRecords, SimpleDBRecords, XmlRecords
-- Clojure-inspired Keywords (typed symbols) and Definitions (schemas)
-- Can join across different data sources (SQL + Lucene, etc.)
-
-### ShavenMaven -- Dependency Resolver
-**Repo:** [bodar/shavenmaven](https://github.com/bodar/shavenmaven) | **31 stars**
-
-Multiple repository types (mvn, s3, http, file, jar-within-jar), Pack200 compression (10x faster downloads), parallel downloads, zero transitive dependencies. Used by JCompilo.
+### Yadic, LazyRecords, ShavenMaven
+- **[Yadic](https://github.com/bodar/yadic.java)** (12 stars) -- 12KB DI container, 1M resolves in 0.28s
+- **[LazyRecords](https://github.com/bodar/lazyrecords)** (8 stars) -- LINQ for Java across SQL, Lucene, memory and more, with cross-source joins
+- **[ShavenMaven](https://github.com/bodar/shavenmaven)** (31 stars) -- fast, transitive-free dependency resolver
 
 ---
 
-## 10second.build -- Startup (2015-2016)
+## 10second.build -- Startup
 
-**GitHub org:** [10secondbuild](https://github.com/10secondbuild) | **Website:** [10second.build](https://10second.build)
+**Website:** [10second.build](https://10second.build) | **GitHub:** [10secondbuild](https://github.com/10secondbuild)
 
-A CI/build service startup aiming to bring super-fast Java builds to everyone, built around JCompilo and Docker:
-- API written in Java using the bodar stack (UtterlyIdle, TotallyLazy)
-- Docker-based pipeline: checkout -> build (JCompilo) -> release stages
-- Integrated with SSL provisioning, DNS, bare metal provisioning (Packet), containerisation (Hyper)
-- Related to the **2012 Agile Award Winner** -- "Most Valuable Agile Innovation (The 10-Second Build)"
-- **QCon presentation:** ["Crazy Fast Build Times, or When 10 Seconds Starts to Make You Nervous"](http://www.infoq.com/presentations/Crazy-Fast-Build-Times-or-When-10-Seconds-Starts-to-Make-You-Nervous)
-- The build time reduction (45 minutes -> 3 minutes for a core system at Sky) that inspired the startup
+A CI service bringing super-fast builds to everyone, built on JCompilo and Docker.
+- Docker pipeline: checkout -> build -> release
+- Automated SSL, DNS, bare-metal provisioning and containers
+- Grew out of the 10-second build work at Sky (45 min -> 3 min), which won the **2012 Agile Award** and a **QCon talk**
 
 ---
 
